@@ -11,6 +11,7 @@ function required(name: string): string {
 export const env = {
   port: Number(process.env.PORT ?? 5000),
   mongoUri: required("MONGODB_URI"),
+  mongoDbName: process.env.MONGODB_DB ?? "medisync",
   jwtSecret: required("JWT_SECRET"),
   jwtExpiresIn: process.env.JWT_EXPIRES_IN ?? "7d",
   clientUrl: process.env.CLIENT_URL ?? "http://localhost:5173",
