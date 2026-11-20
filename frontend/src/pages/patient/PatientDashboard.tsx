@@ -73,12 +73,21 @@ export default function PatientDashboard() {
   );
 }
 
+interface Slot {
+  slot: string;
+  available: boolean;
+  reason: "past" | "booked" | "too_far" | null;
+}
+
+const slotReason = { past: "passed", booked: "booked", too_far: "too far ahead" };
+
 function BookAppointment({ onBooked }: { onBooked: () => void }) {
   const [doctors, setDoctors] = useState<User[]>([]);
   const [department, setDepartment] = useState("");
   const [doctorId, setDoctorId] = useState("");
   const [date, setDate] = useState(today());
-  const [slots, setSlots] = useState<{ slot: string; available: boolean }[]>([]);
+  const [slots, setSlots] = useState<Slot[]>([]);
+  const [maxDate, setMaxDate] = useState<string | undefined>();
   const [slot, setSlot] = useState("");
   const [reason, setReason] = useState("");
   const [msg, setMsg] = useState("");
@@ -91,8 +100,13 @@ function BookAppointment({ onBooked }: { onBooked: () => void }) {
   useEffect(() => {
     setSlot("");
     if (!doctorId || !date) return setSlots([]);
-    api.get("/appointments/slots", { params: { doctorId, date } }).then((r) => setSlots(r.data.slots));
+    api.get("/appointments/slots", { params: { doctorId, date } }).then((r) => {
+      setSlots(r.data.slots);
+      setMaxDate(r.data.maxDate);
+    });
   }, [doctorId, date]);
+
+  const openSlots = slots.filter((s) => s.available).length;
 
   const departments = [...new Set(doctors.map((d) => d.department).filter(Boolean))] as string[];
   const shown = department ? doctors.filter((d) => d.department === department) : doctors;
@@ -130,13 +144,20 @@ function BookAppointment({ onBooked }: { onBooked: () => void }) {
         </div>
         <div>
           <label className="label" htmlFor="date">Date</label>
-          <input id="date" type="date" className="input" min={today()} value={date} onChange={(e) => setDate(e.target.value)} />
+          <input id="date" type="date" className="input" min={today()} max={maxDate} value={date} onChange={(e) => setDate(e.target.value)} />
         </div>
       </div>
 
       {slots.length > 0 && (
         <>
-          <div className="mt-4 mb-2 text-sm font-medium">Available slots</div>
+          <div className="mt-4 mb-2 text-sm font-medium">
+            Available slots <span className="font-normal text-muted">· {openSlots} open</span>
+          </div>
+          {openSlots === 0 && (
+            <p className="mb-2 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-900">
+              No slots left on this day. Try another date or doctor.
+            </p>
+          )}
           <div className="flex flex-wrap gap-2">
             {slots.map((s) => (
               <button
@@ -146,7 +167,7 @@ function BookAppointment({ onBooked }: { onBooked: () => void }) {
                 onClick={() => setSlot(s.slot)}
                 className={`h-11 rounded-lg border px-4 ${slot === s.slot ? "border-2 border-brand bg-brand-soft font-semibold text-brand" : "border-line"} disabled:border-dashed disabled:bg-page disabled:text-muted`}
               >
-                {s.slot}{!s.available && " · full"}
+                {s.slot}{s.reason && ` · ${slotReason[s.reason]}`}
               </button>
             ))}
           </div>

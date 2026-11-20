@@ -55,4 +55,6 @@ export function Empty({ children }: { children: ReactNode }) {
   return <p className="py-6 text-center text-sm text-muted">{children}</p>;
 }
 
-export const today = () => new Date().toISOString().slice(0, 10);
+// Local date as YYYY-MM-DD ("en-CA" formats dates that way). toISOString() would give the
+// UTC date, which is still "yesterday" in India between midnight and 5:30 AM.
+export const today = () => new Date().toLocaleDateString("en-CA");

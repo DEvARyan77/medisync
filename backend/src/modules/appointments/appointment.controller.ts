@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { z } from "zod";
 import { ApiError } from "../../utils/ApiError";
+import { addDays, clinicNow, isPastSlot } from "../../utils/clinicTime";
 import { User } from "../auth/user.model";
 import { ACTIVE_STATUSES, Appointment, AppointmentStatus, OPD_SLOTS, nextToken } from "./appointment.model";
 
@@ -18,7 +19,10 @@ const statusSchema = z.object({
   status: z.enum(["checked_in", "in_consultation", "cancelled", "no_show"]),
 });
 
-const today = () => new Date().toISOString().slice(0, 10);
+// Patients can book from now up to this many days ahead.
+const MAX_DAYS_AHEAD = 30;
+
+const today = () => clinicNow().date;
 
 const populate = [
   { path: "patient", select: "name phone gender dateOfBirth allergies" },
@@ -28,9 +32,17 @@ const populate = [
 // GET /api/appointments/slots?doctorId=...&date=YYYY-MM-DD
 export async function getAvailableSlots(req: Request, res: Response) {
   const { doctorId, date } = z.object({ doctorId: z.string(), date: dateString }).parse(req.query);
+  const now = clinicNow();
   const taken = await Appointment.find({ doctor: doctorId, date, status: { $in: ACTIVE_STATUSES } }).select("slot");
   const takenSet = new Set(taken.map((a) => a.slot));
-  res.json({ slots: OPD_SLOTS.map((slot) => ({ slot, available: !takenSet.has(slot) })) });
+  const tooFar = date > addDays(now.date, MAX_DAYS_AHEAD);
+
+  // reason tells the UI why a slot is greyed out: "past", "booked" or "too_far".
+  const slots = OPD_SLOTS.map((slot) => {
+    const reason = isPastSlot(date, slot, now) ? "past" : tooFar ? "too_far" : takenSet.has(slot) ? "booked" : null;
+    return { slot, available: reason === null, reason };
+  });
+  res.json({ date, today: now.date, maxDate: addDays(now.date, MAX_DAYS_AHEAD), slots });
 }
 
 // POST /api/appointments
@@ -39,7 +51,12 @@ export async function bookAppointment(req: Request, res: Response) {
   const isPatient = req.user!.role === "patient";
   const patientId = isPatient ? req.user!.id : data.patientId;
   if (!patientId) throw new ApiError(400, "patientId is required when staff books an appointment");
-  if (data.date < today()) throw new ApiError(400, "Cannot book a past date");
+  // Checked on the server too, so nobody can book a past slot by calling the API directly.
+  const now = clinicNow();
+  if (isPastSlot(data.date, data.slot, now)) throw new ApiError(400, "This time slot has already passed");
+  if (data.date > addDays(now.date, MAX_DAYS_AHEAD)) {
+    throw new ApiError(400, `Appointments can be booked up to ${MAX_DAYS_AHEAD} days ahead`);
+  }
 
   const doctor = await User.findOne({ _id: data.doctorId, role: "doctor" });
   if (!doctor) throw new ApiError(404, "Doctor not found");

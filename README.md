@@ -61,6 +61,10 @@ medisync/
    ```
 4. On the login page, click a demo role button to fill in its login.
 
+**Demo data:** with `SEED_DEMO=true` the server also adds 6 extra patients (password123), past visit history, a full OPD queue for today (refreshed each day), pending pharmacy prescriptions, bookings for tomorrow, and 3 demo ambulances around Delhi.
+
+**Time zone:** dates and slots use clinic time (`CLINIC_TZ`, default `Asia/Kolkata`); past slots cannot be booked, and bookings are allowed up to 30 days ahead.
+
 **Demo flow:** Patient books a slot → Receptionist checks them in (token A-1) → Doctor opens the patient, writes a prescription → Pharmacist dispenses → Patient sees it in their health timeline.
 
 **Ambulance demo:** Log in as Driver in one browser (allow location; turn "Available" on). Log in as Patient in another, open *Request ambulance*: the driver shows up on the map with distance and ETA. Request, accept as driver, and step through the trip.
