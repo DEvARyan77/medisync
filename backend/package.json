@@ -4,6 +4,9 @@
   "private": true,
   "description": "MediSync OPD & Pharmacy platform - REST API",
   "main": "dist/server.js",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "build": "tsc",

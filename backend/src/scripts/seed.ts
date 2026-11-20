@@ -1,5 +1,6 @@
-// Creates demo users for every role. Run: npm run seed
-// All demo passwords are "password123".
+// Creates demo users for every role. All demo passwords are "password123".
+// Run once with `npm run seed`, or set SEED_DEMO=true so the server does it on startup
+// (useful on hosts without a shell, such as Render's free plan).
 import mongoose from "mongoose";
 import { connectDB } from "../config/db";
 import { User } from "../modules/auth/user.model";
@@ -16,21 +17,22 @@ const users = [
   { name: "Aman Patient", email: "patient@medisync.dev", role: "patient", phone: "9876543210", gender: "male", dateOfBirth: new Date("1992-04-12"), allergies: ["Penicillin"] },
 ];
 
-async function seed() {
-  await connectDB();
+// Adds any demo user that does not exist yet. Safe to run on every start.
+export async function seedDemoUsers(): Promise<void> {
   for (const u of users) {
-    const exists = await User.findOne({ email: u.email });
-    if (exists) {
-      console.log(`skip   ${u.email}`);
-      continue;
-    }
+    if (await User.exists({ email: u.email })) continue;
     await User.create({ ...u, password: "password123" }); // create() runs the hashing hook
-    console.log(`added  ${u.email} (${u.role})`);
+    console.log(`seeded ${u.email} (${u.role})`);
   }
-  await mongoose.disconnect();
 }
 
-seed().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
+// Only runs when called directly: `npm run seed`
+if (require.main === module) {
+  connectDB()
+    .then(seedDemoUsers)
+    .then(() => mongoose.disconnect())
+    .catch((err) => {
+      console.error(err);
+      process.exit(1);
+    });
+}

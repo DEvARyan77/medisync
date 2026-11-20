@@ -85,7 +85,7 @@ medisync/
 ## Deploy (free tiers)
 
 - **Database:** MongoDB Atlas M0. In Network Access allow `0.0.0.0/0` so Render can connect.
-- **Backend → Render:** new Web Service, root `backend`, build `npm install && npm run build`, start `npm start`. Add the env vars from `.env.example`; set `CLIENT_URL` to your Vercel URL.
+- **Backend → Render:** new Web Service, root `backend`, build `npm install --include=dev && npm run build`, start `npm start`. Add the env vars from `.env.example` (`SEED_DEMO=true` creates the demo logins on startup); set `CLIENT_URL` to your Vercel URL.
 - **Frontend → Vercel:** import the repo, root `frontend`, set `VITE_API_URL=https://<your-render-app>.onrender.com/api`.
 
 GPS in the browser needs HTTPS, which Vercel provides.
