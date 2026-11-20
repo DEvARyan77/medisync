@@ -1,4 +1,4 @@
-import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { Navigate, NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import type { Role } from "../types";
 
@@ -21,7 +21,7 @@ const menus: Record<Role, { to: string; label: string; danger?: boolean }[]> = {
 export function Layout() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  if (!user) return null;
+  if (!user) return <Navigate to="/login" replace />;
 
   return (
     <div className="flex min-h-screen flex-col bg-page text-slate-900 md:flex-row">
