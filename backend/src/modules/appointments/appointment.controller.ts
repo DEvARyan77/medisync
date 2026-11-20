@@ -27,7 +27,7 @@ const MAX_DAYS_AHEAD = 30;
 const today = () => clinicNow().date;
 
 const populate = [
-  { path: "patient", select: "name email phone gender dateOfBirth allergies bloodGroup" },
+  { path: "patient", select: "name email alternateEmail phone gender dateOfBirth allergies bloodGroup" },
   { path: "doctor", select: "name department specialization" },
 ];
 
@@ -82,6 +82,7 @@ export async function bookAppointment(req: Request, res: Response) {
   const p = appointment.patient as unknown as Person;
   sendEmail({
     to: p.email,
+    cc: p.alternateEmail,
     name: p.name,
     ...appointmentBookedEmail({ name: p.name, doctor: doctor.name, department: doctor.department ?? undefined, date: data.date, slot: data.slot }),
   });
@@ -91,6 +92,7 @@ export async function bookAppointment(req: Request, res: Response) {
 interface Person {
   name: string;
   email: string;
+  alternateEmail?: string;
 }
 
 // GET /api/appointments/mine  (patient's own appointments)
@@ -157,10 +159,11 @@ export async function updateStatus(req: Request, res: Response) {
   const patient = appointment.patient as unknown as Person;
   const doctor = appointment.doctor as unknown as Person;
   if (status === "checked_in") {
-    sendEmail({ to: patient.email, name: patient.name, ...checkedInEmail({ name: patient.name, token: appointment.token!, doctor: doctor.name }) });
+    sendEmail({ to: patient.email, cc: patient.alternateEmail, name: patient.name, ...checkedInEmail({ name: patient.name, token: appointment.token!, doctor: doctor.name }) });
   } else if (status === "cancelled") {
     sendEmail({
       to: patient.email,
+      cc: patient.alternateEmail,
       name: patient.name,
       ...appointmentCancelledEmail({ name: patient.name, doctor: doctor.name, date: appointment.date, slot: appointment.slot, byClinic: role !== "patient" }),
     });

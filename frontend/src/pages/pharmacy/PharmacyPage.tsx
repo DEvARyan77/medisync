@@ -29,15 +29,15 @@ export default function PharmacyPage() {
       <PageTitle>Pharmacy</PageTitle>
       <div className="mb-4 flex gap-2">
         {(["pending", "dispensed"] as const).map((t) => (
-          <button key={t} onClick={() => { setTab(t); setSelectedId(null); }} className={`rounded-full px-4 py-2 text-sm font-semibold capitalize ${tab === t ? "bg-brand text-white" : "border border-line bg-white"}`}>
+          <button key={t} onClick={() => { setTab(t); setSelectedId(null); }} className={`rounded-full px-4 py-2 text-sm font-semibold transition-[transform,background-color] duration-300 ease-(--ease-spring) active:scale-90 ${tab === t ? "bg-brand text-white" : "border border-line bg-white"}`}>
             {t === "pending" ? "To dispense" : "Dispensed"}
           </button>
         ))}
       </div>
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[320px_minmax(0,1fr)]">
-        <aside className="card flex max-h-72 flex-col gap-2 overflow-y-auto p-3 sm:p-4 lg:max-h-none">
+        <aside className="stagger card flex max-h-72 flex-col gap-2 overflow-y-auto p-3 sm:p-4 lg:max-h-none">
           {list.data?.map((p) => (
-            <button key={p._id} onClick={() => setSelectedId(p._id)} className={`rounded-lg border p-3 text-left ${selected?._id === p._id ? "border-2 border-brand bg-brand-soft" : "border-line"}`}>
+            <button key={p._id} onClick={() => setSelectedId(p._id)} className={`rounded-lg border p-3 text-left transition-[transform,background-color,border-color] duration-300 ease-(--ease-spring) hover:translate-x-1 active:scale-95 ${selected?._id === p._id ? "border-2 border-brand bg-brand-soft" : "border-line"}`}>
               <div className="font-semibold">{p.patient.name}</div>
               <div className="text-sm text-muted">{p.doctor.name} · {p.items.length} items · {new Date(p.createdAt).toLocaleTimeString()}</div>
             </button>
@@ -46,7 +46,7 @@ export default function PharmacyPage() {
         </aside>
 
         {selected && (
-          <section className="card">
+          <section key={selected._id} className="card animate-pop-in">
             <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
               <div>
                 <h2 className="text-lg font-semibold">{selected.patient.name}</h2>
@@ -55,7 +55,7 @@ export default function PharmacyPage() {
               <StatusPill status={selected.status} />
             </div>
             {/* Phones: stacked medicine cards */}
-            <ul className="flex flex-col gap-2 sm:hidden">
+            <ul className="stagger flex flex-col gap-2 sm:hidden">
               {selected.items.map((m, i) => (
                 <li key={i} className="rounded-lg bg-page p-3 text-sm">
                   <div className="font-semibold">{m.medicine} <span className="font-normal">{m.dose}</span></div>

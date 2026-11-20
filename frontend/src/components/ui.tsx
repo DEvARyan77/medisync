@@ -39,7 +39,7 @@ export function PageTitle({ children, action }: { children: ReactNode; action?: 
 
 export function StatCard({ label, value }: { label: string; value: ReactNode }) {
   return (
-    <div className="card p-3 sm:p-5">
+    <div className="card card-hover p-3 sm:p-5">
       <div className="text-xs font-semibold tracking-wide text-muted uppercase">{label}</div>
       <div className="font-display text-2xl font-bold sm:text-3xl">{value}</div>
     </div>
@@ -48,7 +48,8 @@ export function StatCard({ label, value }: { label: string; value: ReactNode }) 
 
 export function ErrorText({ message }: { message: string }) {
   if (!message) return null;
-  return <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-800">{message}</p>;
+  // key = message, so a new error shakes again
+  return <p key={message} role="alert" className="animate-wiggle rounded-lg bg-red-50 px-3 py-2 text-sm text-red-800">{message}</p>;
 }
 
 export function Empty({ children }: { children: ReactNode }) {

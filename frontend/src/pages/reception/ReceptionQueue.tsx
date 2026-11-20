@@ -3,6 +3,7 @@ import { api, errorMessage } from "../../api/client";
 import { usePolling } from "../../hooks/usePolling";
 import { Empty, ErrorText, PageTitle, StatCard, StatusPill, today } from "../../components/ui";
 import type { Appointment, Trip } from "../../types";
+import { DatePicker } from "../../components/DatePicker";
 
 interface QueueResponse {
   date: string;
@@ -53,18 +54,18 @@ export default function ReceptionQueue() {
     <>
       <PageTitle
         action={
-          <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
+          <div className="flex w-full flex-col gap-3 lg:w-auto lg:flex-row">
             <label className="sr-only" htmlFor="search">Search</label>
-            <input id="search" className="input sm:w-64" placeholder="Search name, phone or token" value={search} onChange={(e) => setSearch(e.target.value)} />
+            <input id="search" className="input lg:w-64" placeholder="Search name, phone or token" value={search} onChange={(e) => setSearch(e.target.value)} />
             <label className="sr-only" htmlFor="date">Date</label>
-            <input id="date" type="date" className="input sm:w-44" value={date} onChange={(e) => setDate(e.target.value)} />
+            <div className="lg:w-60"><DatePicker id="date" value={date} onChange={setDate} alignRight /></div>
           </div>
         }
       >
         OPD queue
       </PageTitle>
 
-      <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-5">
+      <div className="stagger mb-6 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-5">
         <StatCard label="Booked" value={s?.booked ?? 0} />
         <StatCard label="Waiting" value={s?.waiting ?? 0} />
         <StatCard label="In consultation" value={s?.inConsultation ?? 0} />
@@ -74,9 +75,9 @@ export default function ReceptionQueue() {
 
       <ErrorText message={error} />
       {/* Phones: one card per patient */}
-      <section className="mt-2 flex flex-col gap-3 md:hidden">
+      <section className="stagger mt-2 flex flex-col gap-3 md:hidden">
         {rows.map((a) => (
-          <div key={a._id} className="card flex flex-col gap-3">
+          <div key={a._id} className="card card-hover flex flex-col gap-3">
             <div className="flex items-start justify-between gap-3">
               <div className="flex items-center gap-3">
                 <span className="font-display min-w-12 text-2xl font-bold text-brand">{a.token ?? "—"}</span>
@@ -101,9 +102,9 @@ export default function ReceptionQueue() {
               <th className="px-6 py-4">Token</th><th className="px-3">Patient</th><th className="px-3">Doctor</th><th className="px-3">Slot</th><th className="px-3">Status</th><th className="px-6">Action</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="stagger">
             {rows.map((a) => (
-              <tr key={a._id} className="border-t border-line">
+              <tr key={a._id} className="border-t border-line transition-colors duration-200 hover:bg-page">
                 <td className="px-6 py-3 font-bold">{a.token ?? "—"}</td>
                 <td className="px-3">{a.patient.name}<div className="text-xs text-muted">{a.patient.phone}</div></td>
                 <td className="px-3">{a.doctor.name}</td>
@@ -120,7 +121,7 @@ export default function ReceptionQueue() {
       <section className="card mt-6">
         <h2 className="mb-3 text-lg font-semibold">Active ambulance trips</h2>
         {!trips.data?.length && <Empty>No active trips.</Empty>}
-        <ul className="divide-y divide-line">
+        <ul className="stagger divide-y divide-line">
           {trips.data?.map((t) => (
             <li key={t._id} className="flex flex-wrap items-center justify-between gap-3 py-3">
               <div>

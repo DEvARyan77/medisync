@@ -10,20 +10,94 @@
   --color-muted: #5a6270;
   --color-page: #f4f5f7;
   --color-danger: #b91c1c;
+
+  /* Springy easing: overshoots a little, then settles (the "bubbly" feel). */
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+
+  --animate-page-in: page-in 0.45s var(--ease-out-soft) both;
+  --animate-pop-in: pop-in 0.5s var(--ease-spring) both;
+  --animate-drop-in: drop-in 0.32s var(--ease-spring) both;
+  --animate-pop: pop 0.35s var(--ease-spring);
+  --animate-wiggle: wiggle 0.4s ease-in-out;
+  --animate-pulse-ring: pulse-ring 1.8s ease-out infinite;
+
+  @keyframes page-in {
+    from { opacity: 0; transform: translateY(14px); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes pop-in {
+    from { opacity: 0; transform: translateY(10px) scale(0.94); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes drop-in {
+    from { opacity: 0; transform: translateY(-6px) scale(0.95); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes pop {
+    0% { transform: scale(1); }
+    45% { transform: scale(1.12); }
+    100% { transform: scale(1); }
+  }
+  @keyframes wiggle {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-5px); }
+    40% { transform: translateX(5px); }
+    60% { transform: translateX(-3px); }
+    80% { transform: translateX(3px); }
+  }
+  @keyframes pulse-ring {
+    0% { box-shadow: 0 0 0 0 rgb(185 28 28 / 0.45); }
+    70% { box-shadow: 0 0 0 12px rgb(185 28 28 / 0); }
+    100% { box-shadow: 0 0 0 0 rgb(185 28 28 / 0); }
+  }
 }
 
 /* Reusable classes (Tailwind v4 custom utilities) */
 @utility card { @apply rounded-xl border border-line bg-white p-4 sm:p-6; }
+/* A card you can click: lifts on hover, squishes on press */
+@utility card-hover {
+  @apply transition-[transform,box-shadow,border-color] duration-300 ease-(--ease-spring) hover:-translate-y-0.5 hover:shadow-lg hover:shadow-slate-900/5 active:scale-[0.98];
+}
 /* 16px on phones stops iOS Safari from zooming in when a field is focused */
-@utility input { @apply h-11 w-full rounded-lg border border-line bg-white px-3 text-base outline-none focus:border-brand sm:text-[15px]; }
+@utility input {
+  @apply h-11 w-full rounded-lg border border-line bg-white px-3 text-base outline-none transition-[border-color,box-shadow] duration-200 focus:border-brand focus:ring-4 focus:ring-brand/15 sm:text-[15px];
+}
 @utility label { @apply mb-1.5 block text-sm font-medium; }
-@utility btn { @apply inline-flex h-11 items-center justify-center rounded-lg px-5 font-semibold disabled:opacity-50; }
-@utility btn-primary { @apply btn bg-brand text-white hover:bg-brand-dark; }
+@utility btn {
+  @apply inline-flex h-11 select-none items-center justify-center gap-2 rounded-lg px-5 font-semibold transition-[transform,background-color,box-shadow,color] duration-300 ease-(--ease-spring) hover:-translate-y-0.5 active:translate-y-0 active:scale-95 disabled:pointer-events-none disabled:opacity-50;
+}
+@utility btn-primary { @apply btn bg-brand text-white hover:bg-brand-dark hover:shadow-lg hover:shadow-brand/25; }
 @utility btn-outline { @apply btn border border-brand bg-white text-brand hover:bg-brand-soft; }
 @utility btn-ghost { @apply btn border border-line bg-white text-slate-800 hover:bg-page; }
-@utility btn-danger { @apply btn bg-danger text-white hover:bg-red-800; }
-@layer base {
-  textarea { @apply text-base sm:text-[15px]; }
+@utility btn-danger { @apply btn bg-danger text-white hover:bg-red-800 hover:shadow-lg hover:shadow-danger/25; }
+@utility pill { @apply inline-block animate-pop-in rounded-full px-2.5 py-1 text-xs font-semibold; }
+
+/* Children appear one after another: put "stagger" on a list or grid. */
+@utility stagger {
+  & > * { animation: pop-in 0.5s var(--ease-spring) both; }
+  & > *:nth-child(2) { animation-delay: 50ms; }
+  & > *:nth-child(3) { animation-delay: 100ms; }
+  & > *:nth-child(4) { animation-delay: 150ms; }
+  & > *:nth-child(5) { animation-delay: 200ms; }
+  & > *:nth-child(6) { animation-delay: 250ms; }
+  & > *:nth-child(7) { animation-delay: 300ms; }
+  & > *:nth-child(8) { animation-delay: 350ms; }
+  & > *:nth-child(n + 9) { animation-delay: 400ms; }
 }
 
-@utility pill { @apply inline-block rounded-full px-2.5 py-1 text-xs font-semibold; }
+@layer base {
+  textarea { @apply text-base transition-[border-color,box-shadow] duration-200 outline-none focus:border-brand focus:ring-4 focus:ring-brand/15 sm:text-[15px]; }
+  a, button { -webkit-tap-highlight-color: transparent; }
+  :focus-visible { outline: 2px solid var(--color-brand); outline-offset: 2px; }
+}
+
+/* People who turn on "reduce motion" get instant changes instead. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

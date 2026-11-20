@@ -23,7 +23,7 @@ export default function DoctorOPD() {
     <>
       <PageTitle>My OPD · today</PageTitle>
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[280px_minmax(0,1fr)]">
-        <aside className="card flex max-h-72 flex-col gap-2 overflow-y-auto p-3 sm:p-4 lg:max-h-none">
+        <aside className="stagger card flex max-h-72 flex-col gap-2 overflow-y-auto p-3 sm:p-4 lg:max-h-none">
           <h2 className="px-2 text-xs font-semibold text-muted uppercase">Queue ({waiting.length})</h2>
           {waiting.map((a) => (
             <button
@@ -33,7 +33,7 @@ export default function DoctorOPD() {
                 // On phones the form is below the queue, so bring it into view.
                 setTimeout(() => document.getElementById("consult")?.scrollIntoView({ behavior: "smooth" }), 50);
               }}
-              className={`flex items-center justify-between gap-2 rounded-lg px-3 py-3 text-left ${selectedId === a._id ? "bg-brand-soft font-semibold text-brand" : "hover:bg-page"}`}
+              className={`flex items-center justify-between gap-2 rounded-lg px-3 py-3 text-left transition-[transform,background-color] duration-300 ease-(--ease-spring) hover:translate-x-1 active:scale-95 ${selectedId === a._id ? "bg-brand-soft font-semibold text-brand" : "hover:bg-page"}`}
             >
               <span>{a.token} · {a.patient.name}</span>
               <StatusPill status={a.status} />
@@ -102,8 +102,8 @@ function ConsultationForm({ appointment, onDone }: { appointment: Appointment; o
   }
 
   return (
-    <div id="consult" className="grid min-w-0 grid-cols-1 scroll-mt-16 gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
-      <div className="flex min-w-0 flex-col gap-6">
+    <div id="consult" className="grid min-w-0 animate-page-in grid-cols-1 scroll-mt-16 gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
+      <div className="stagger flex min-w-0 flex-col gap-6">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <h2 className="text-xl font-bold sm:text-2xl">{p.name} <span className="font-normal text-muted">· {age(p.dateOfBirth)} {p.gender}</span></h2>
@@ -145,7 +145,7 @@ function ConsultationForm({ appointment, onDone }: { appointment: Appointment; o
           </div>
           <div className="flex flex-col gap-3">
             {meds.map((m, i) => (
-              <div key={i} className="grid grid-cols-3 gap-2 rounded-lg border border-line p-2 md:grid-cols-[2fr_1fr_1fr_80px_2fr_auto] md:border-0 md:p-0">
+              <div key={i} className="grid animate-pop-in grid-cols-3 gap-2 rounded-lg border border-line p-2 md:grid-cols-[2fr_1fr_1fr_80px_2fr_auto] md:border-0 md:p-0">
                 <input aria-label="Medicine" className="input col-span-3 md:col-span-1" placeholder="Medicine" value={m.medicine} onChange={(e) => setMed(i, "medicine", e.target.value)} />
                 <input aria-label="Dose" className="input" placeholder="500 mg" value={m.dose} onChange={(e) => setMed(i, "dose", e.target.value)} />
                 <input aria-label="Frequency" className="input" placeholder="1-0-1" value={m.frequency} onChange={(e) => setMed(i, "frequency", e.target.value)} />

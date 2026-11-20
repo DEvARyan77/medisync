@@ -71,12 +71,13 @@ export async function createConsultation(req: Request, res: Response) {
   await appointment.save();
 
   const [patient, doctor] = await Promise.all([
-    User.findById(appointment.patient).select("name email"),
+    User.findById(appointment.patient).select("name email alternateEmail"),
     User.findById(doctorId).select("name"),
   ]);
   if (patient) {
     sendEmail({
       to: patient.email,
+      cc: patient.alternateEmail,
       name: patient.name,
       ...prescriptionEmail({ name: patient.name, doctor: doctor?.name ?? "Your doctor", diagnosis: data.diagnosis, medicines: data.medicines }),
     });

@@ -9,6 +9,8 @@
 export interface EmailMessage {
   to: string;
   name?: string;
+  /** The user's alternate email: gets a copy of every notification. */
+  cc?: string | null;
   subject: string;
   html: string;
   text: string;
@@ -21,14 +23,21 @@ export function emailEnabled(): boolean {
   return Boolean(process.env.BREVO_API_KEY && process.env.EMAIL_FROM);
 }
 
+const deliverable = (addr?: string | null): addr is string => {
+  const domain = addr?.split("@")[1]?.toLowerCase();
+  return !!domain && !SKIP_DOMAINS.includes(domain);
+};
+
 async function deliver(msg: EmailMessage): Promise<void> {
-  const domain = msg.to.split("@")[1]?.toLowerCase();
-  if (!domain || SKIP_DOMAINS.includes(domain)) {
+  const cc = deliverable(msg.cc) && msg.cc.toLowerCase() !== msg.to.toLowerCase() ? msg.cc : undefined;
+  if (!deliverable(msg.to)) {
+    if (cc) return deliver({ ...msg, to: cc, cc: undefined }); // demo primary, real alternate
+
     console.log(`[email] skipped demo address ${msg.to}: ${msg.subject}`);
     return;
   }
   if (!emailEnabled()) {
-    console.log(`[email] (not configured) to=${msg.to} subject="${msg.subject}"`);
+    console.log(`[email] (not configured) to=${msg.to}${cc ? ` cc=${cc}` : ""} subject="${msg.subject}"`);
     return;
   }
 
@@ -42,6 +51,7 @@ async function deliver(msg: EmailMessage): Promise<void> {
     body: JSON.stringify({
       sender: { email: process.env.EMAIL_FROM, name: process.env.EMAIL_FROM_NAME ?? "MediSync" },
       to: [{ email: msg.to, name: msg.name }],
+      ...(cc && { cc: [{ email: cc, name: msg.name }] }),
       subject: msg.subject,
       htmlContent: msg.html,
       textContent: msg.text,
@@ -49,7 +59,7 @@ async function deliver(msg: EmailMessage): Promise<void> {
     signal: AbortSignal.timeout(10_000),
   });
   if (!res.ok) throw new Error(`Brevo ${res.status}: ${(await res.text()).slice(0, 300)}`);
-  console.log(`[email] sent to ${msg.to}: ${msg.subject}`);
+  console.log(`[email] sent to ${msg.to}${cc ? ` (+ ${cc})` : ""}: ${msg.subject}`);
 }
 
 /**

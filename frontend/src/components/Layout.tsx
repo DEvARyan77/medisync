@@ -40,8 +40,8 @@ export function Layout() {
           end
           className={({ isActive }) =>
             m.danger
-              ? "mt-2 rounded-lg bg-danger px-3 py-3 text-center font-semibold text-white"
-              : `rounded-lg px-3 py-3 ${isActive ? "bg-brand-soft font-semibold text-brand" : "hover:bg-page"}`
+              ? "mt-2 animate-pulse-ring rounded-lg bg-danger px-3 py-3 text-center font-semibold text-white transition-transform duration-300 ease-(--ease-spring) hover:scale-[1.03] active:scale-95"
+              : `rounded-lg px-3 py-3 transition-[transform,background-color] duration-300 ease-(--ease-spring) hover:translate-x-1 active:scale-95 ${isActive ? "bg-brand-soft font-semibold text-brand" : "hover:bg-page"}`
           }
         >
           {m.label}
@@ -49,7 +49,7 @@ export function Layout() {
       ))}
       <NavLink
         to="/profile"
-        className={({ isActive }) => `rounded-lg px-3 py-3 ${isActive ? "bg-brand-soft font-semibold text-brand" : "hover:bg-page"}`}
+        className={({ isActive }) => `rounded-lg px-3 py-3 transition-[transform,background-color] duration-300 ease-(--ease-spring) hover:translate-x-1 active:scale-95 ${isActive ? "bg-brand-soft font-semibold text-brand" : "hover:bg-page"}`}
       >
         My profile
       </NavLink>
@@ -78,17 +78,17 @@ export function Layout() {
         <div className="flex h-14 items-center justify-between px-4">
           <Link to={homeFor[user.role]} className="font-display text-xl font-bold text-brand">MediSync</Link>
           <button
-            className="flex h-11 w-11 items-center justify-center rounded-lg hover:bg-page"
+            className="flex h-11 w-11 items-center justify-center rounded-lg transition-transform duration-300 ease-(--ease-spring) hover:bg-page active:scale-90"
             aria-label={menuOpen ? "Close menu" : "Open menu"}
             aria-expanded={menuOpen}
             onClick={() => setMenuOpen(!menuOpen)}
           >
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-              {menuOpen ? <path d="M6 6l12 12M18 6L6 18" /> : <path d="M4 7h16M4 12h16M4 17h16" />}
+              <g className={`origin-center transition-transform duration-300 ease-(--ease-spring) ${menuOpen ? "rotate-90" : ""}`}>{menuOpen ? <path d="M6 6l12 12M18 6L6 18" /> : <path d="M4 7h16M4 12h16M4 17h16" />}</g>
             </svg>
           </button>
         </div>
-        {menuOpen && <nav className="flex flex-col gap-1 border-t border-line p-3">{nav}</nav>}
+        {menuOpen && <nav className="stagger flex origin-top animate-drop-in flex-col gap-1 border-t border-line p-3">{nav}</nav>}
       </header>
 
       {/* Desktop: fixed sidebar */}
@@ -98,7 +98,10 @@ export function Layout() {
       </nav>
 
       <main className="min-w-0 flex-1 p-4 sm:p-6 lg:p-10">
-        <Outlet />
+        {/* key = path, so every page plays its entrance animation */}
+        <div key={location.pathname} className="animate-page-in">
+          <Outlet />
+        </div>
       </main>
     </div>
   );

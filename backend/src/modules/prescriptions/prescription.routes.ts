@@ -10,7 +10,7 @@ const router = Router();
 router.use(protect);
 
 const populate = [
-  { path: "patient", select: "name email phone allergies" },
+  { path: "patient", select: "name email alternateEmail phone allergies" },
   { path: "doctor", select: "name department" },
 ];
 
@@ -42,8 +42,8 @@ router.patch(
       { new: true }
     ).populate(populate);
     if (!prescription) throw new ApiError(404, "Prescription not found or already dispensed");
-    const patient = prescription.patient as unknown as { name: string; email: string };
-    sendEmail({ to: patient.email, name: patient.name, ...dispensedEmail({ name: patient.name, count: prescription.items.length }) });
+    const patient = prescription.patient as unknown as { name: string; email: string; alternateEmail?: string };
+    sendEmail({ to: patient.email, cc: patient.alternateEmail, name: patient.name, ...dispensedEmail({ name: patient.name, count: prescription.items.length }) });
     res.json({ prescription });
   })
 );

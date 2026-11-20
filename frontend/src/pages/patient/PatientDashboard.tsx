@@ -5,6 +5,7 @@ import { useAuth } from "../../context/AuthContext";
 import { usePolling } from "../../hooks/usePolling";
 import { Empty, ErrorText, PageTitle, StatusPill, today } from "../../components/ui";
 import type { Appointment, Prescription, User } from "../../types";
+import { DateStrip, addDaysStr, formatDate } from "../../components/DatePicker";
 
 export default function PatientDashboard() {
   const { user } = useAuth();
@@ -23,26 +24,26 @@ export default function PatientDashboard() {
 
   return (
     <>
-      <PageTitle action={<Link to="/patient/ambulance" className="btn-danger">Request ambulance</Link>}>Hello, {user?.name}</PageTitle>
+      <PageTitle action={<Link to="/patient/ambulance" className="btn-danger animate-pulse-ring">Request ambulance</Link>}>Hello, {user?.name}</PageTitle>
 
-      <div className="mb-6 grid gap-4 md:grid-cols-3">
-        <div className="card p-5">
+      <div className="stagger mb-6 grid gap-4 md:grid-cols-3">
+        <div className="card card-hover p-5">
           <div className="text-xs font-semibold text-muted uppercase">Today's token</div>
-          <div className="font-display text-4xl font-bold text-brand">{todays?.token ?? "—"}</div>
+          <div key={todays?.token} className="font-display animate-pop text-4xl font-bold text-brand">{todays?.token ?? "—"}</div>
           <div className="text-sm text-muted">{todays ? <StatusPill status={todays.status} /> : "Check in at reception to get a token"}</div>
         </div>
-        <div className="card p-5">
+        <div className="card card-hover p-5">
           <div className="text-xs font-semibold text-muted uppercase">Next appointment</div>
           {upcoming[0] ? (
             <>
               <div className="text-lg font-semibold">{upcoming[0].doctor.name}</div>
-              <div className="text-sm text-muted">{upcoming[0].date} · {upcoming[0].slot} · {upcoming[0].doctor.department}</div>
+              <div className="text-sm text-muted">{formatDate(upcoming[0].date)} · {upcoming[0].slot} · {upcoming[0].doctor.department}</div>
             </>
           ) : (
             <div className="text-muted">None booked</div>
           )}
         </div>
-        <div className="card p-5">
+        <div className="card card-hover p-5">
           <div className="text-xs font-semibold text-muted uppercase">Prescriptions</div>
           <div className="font-display text-4xl font-bold">{data?.prescriptions.length ?? 0}</div>
           <Link to="/patient/history" className="text-sm font-semibold text-brand">View health timeline</Link>
@@ -54,12 +55,12 @@ export default function PatientDashboard() {
       <section className="card mt-6">
         <h2 className="mb-3 text-lg font-semibold">My appointments</h2>
         {!data?.appointments.length && <Empty>No appointments yet.</Empty>}
-        <div className="divide-y divide-line">
+        <div className="stagger divide-y divide-line">
           {data?.appointments.map((a) => (
             <div key={a._id} className="flex flex-wrap items-center justify-between gap-3 py-3">
               <div>
                 <div className="font-semibold">{a.doctor.name} <span className="font-normal text-muted">· {a.doctor.department}</span></div>
-                <div className="text-sm text-muted">{a.date} at {a.slot}{a.token ? ` · Token ${a.token}` : ""}</div>
+                <div className="text-sm text-muted">{formatDate(a.date)} at {a.slot}{a.token ? ` · Token ${a.token}` : ""}</div>
               </div>
               <div className="flex items-center gap-3">
                 <StatusPill status={a.status} />
@@ -87,7 +88,7 @@ function BookAppointment({ onBooked }: { onBooked: () => void }) {
   const [doctorId, setDoctorId] = useState("");
   const [date, setDate] = useState(today());
   const [slots, setSlots] = useState<Slot[]>([]);
-  const [maxDate, setMaxDate] = useState<string | undefined>();
+  const [maxDate, setMaxDate] = useState<string>(addDaysStr(today(), 30));
   const [slot, setSlot] = useState("");
   const [reason, setReason] = useState("");
   const [msg, setMsg] = useState("");
@@ -115,7 +116,7 @@ function BookAppointment({ onBooked }: { onBooked: () => void }) {
     setError("");
     try {
       await api.post("/appointments", { doctorId, date, slot, reason });
-      setMsg(`Booked for ${date} at ${slot}. Check in at reception on the day to get your token.`);
+      setMsg(`Booked for ${formatDate(date)} at ${slot}. Check in at reception on the day to get your token. A confirmation email is on its way.`);
       setSlot("");
       setDoctorId("");
       onBooked();
@@ -127,7 +128,7 @@ function BookAppointment({ onBooked }: { onBooked: () => void }) {
   return (
     <section className="card">
       <h2 className="mb-4 text-lg font-semibold">Book an OPD appointment</h2>
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2">
         <div>
           <label className="label" htmlFor="dept">Department</label>
           <select id="dept" className="input" value={department} onChange={(e) => { setDepartment(e.target.value); setDoctorId(""); }}>
@@ -142,44 +143,61 @@ function BookAppointment({ onBooked }: { onBooked: () => void }) {
             {shown.map((d) => <option key={d._id} value={d._id}>{d.name} ({d.department})</option>)}
           </select>
         </div>
-        <div>
-          <label className="label" htmlFor="date">Date</label>
-          <input id="date" type="date" className="input" min={today()} max={maxDate} value={date} onChange={(e) => setDate(e.target.value)} />
-        </div>
       </div>
 
+      <div className="mt-5">
+        <div className="label">Date</div>
+        <DateStrip id="date" value={date} onChange={setDate} min={today()} max={maxDate} />
+      </div>
+
+      {!doctorId && <p className="mt-4 text-sm text-muted">Choose a doctor to see open time slots.</p>}
+
       {slots.length > 0 && (
-        <>
-          <div className="mt-4 mb-2 text-sm font-medium">
-            Available slots <span className="font-normal text-muted">· {openSlots} open</span>
+        <div key={`${doctorId}-${date}`} className="mt-5 animate-page-in">
+          <div className="mb-2 text-sm font-medium">
+            Time slots on {formatDate(date, { weekday: "long", day: "numeric", month: "short" })}{" "}
+            <span className="font-normal text-muted">· {openSlots} open</span>
           </div>
           {openSlots === 0 && (
-            <p className="mb-2 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-900">
+            <p className="mb-2 animate-pop-in rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-900">
               No slots left on this day. Try another date or doctor.
             </p>
           )}
-          <div className="flex flex-wrap gap-2">
-            {slots.map((s) => (
-              <button
-                key={s.slot}
-                type="button"
-                disabled={!s.available}
-                onClick={() => setSlot(s.slot)}
-                className={`h-11 rounded-lg border px-4 ${slot === s.slot ? "border-2 border-brand bg-brand-soft font-semibold text-brand" : "border-line"} disabled:border-dashed disabled:bg-page disabled:text-muted`}
-              >
-                {s.slot}{s.reason && ` · ${slotReason[s.reason]}`}
-              </button>
-            ))}
+          <div className="stagger grid grid-cols-3 gap-2 sm:flex sm:flex-wrap">
+            {slots.map((s) => {
+              const sel = slot === s.slot;
+              return (
+                <button
+                  key={s.slot}
+                  type="button"
+                  disabled={!s.available}
+                  aria-pressed={sel}
+                  onClick={() => setSlot(s.slot)}
+                  className={[
+                    "flex h-12 flex-col items-center justify-center rounded-xl border px-4 leading-tight transition-[transform,background-color,box-shadow,border-color] duration-300 ease-(--ease-spring)",
+                    sel
+                      ? "scale-105 border-brand bg-brand font-semibold text-white shadow-lg shadow-brand/30"
+                      : "border-line bg-white hover:-translate-y-0.5 hover:border-brand/60 hover:shadow-md active:scale-95",
+                    "disabled:translate-y-0 disabled:scale-100 disabled:border-dashed disabled:bg-page disabled:text-slate-400 disabled:shadow-none",
+                  ].join(" ")}
+                >
+                  <span className="font-semibold">{s.slot}</span>
+                  {s.reason && <span className="text-[11px]">{slotReason[s.reason]}</span>}
+                </button>
+              );
+            })}
           </div>
-          <div className="mt-4 flex flex-wrap gap-3">
+          <div className="mt-4 flex flex-col gap-3 sm:flex-row">
             <label className="sr-only" htmlFor="reason">Reason</label>
-            <input id="reason" className="input max-w-md" placeholder="Reason for visit (optional)" value={reason} onChange={(e) => setReason(e.target.value)} />
-            <button className="btn-primary" disabled={!slot} onClick={book}>Book appointment</button>
+            <input id="reason" className="input sm:max-w-md" placeholder="Reason for visit (optional)" value={reason} onChange={(e) => setReason(e.target.value)} />
+            <button className="btn-primary w-full sm:w-auto" disabled={!slot} onClick={book}>
+              {slot ? `Book ${slot}` : "Pick a time"}
+            </button>
           </div>
-        </>
+        </div>
       )}
       <div className="mt-3"><ErrorText message={error} /></div>
-      {msg && <p className="mt-3 rounded-lg bg-brand-soft px-3 py-2 text-sm text-brand">{msg}</p>}
+      {msg && <p className="mt-3 animate-pop-in rounded-lg bg-brand-soft px-3 py-2 text-sm text-brand">{msg}</p>}
     </section>
   );
 }

@@ -53,7 +53,7 @@ export default function Login() {
       </section>
 
       <section className="flex flex-1 items-start justify-center p-4 sm:p-6 md:items-center">
-        <form onSubmit={onSubmit} className="card flex w-full max-w-md flex-col gap-5 sm:p-10">
+        <form onSubmit={onSubmit} className="card flex w-full max-w-md animate-pop-in flex-col gap-5 shadow-xl shadow-slate-900/5 sm:p-10">
           <h2 className="text-2xl font-bold">Sign in</h2>
           <div>
             <label className="label" htmlFor="email">Email</label>
@@ -74,12 +74,12 @@ export default function Login() {
 
           <div className="border-t border-line pt-4">
             <p className="mb-2 text-xs font-semibold text-muted uppercase">Demo logins (password123)</p>
-            <div className="flex flex-wrap gap-2">
+            <div className="stagger flex flex-wrap gap-2">
               {demoAccounts.map(([role, mail]) => (
                 <button
                   type="button"
                   key={mail}
-                  className="rounded-full border border-line px-3 py-1.5 text-sm hover:bg-page"
+                  className="rounded-full border border-line px-3 py-1.5 text-sm transition-transform duration-300 ease-(--ease-spring) hover:-translate-y-0.5 hover:border-brand hover:bg-brand-soft active:scale-90"
                   onClick={() => {
                     setEmail(mail);
                     setPassword("password123");

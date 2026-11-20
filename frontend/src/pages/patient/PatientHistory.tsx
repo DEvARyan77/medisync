@@ -17,7 +17,7 @@ export default function PatientHistory() {
       <PageTitle>Health timeline</PageTitle>
       <div className="card">
         {!data?.length && <Empty>No visits yet.</Empty>}
-        <ol className="divide-y divide-line">
+        <ol className="stagger divide-y divide-line">
           {data?.map((c) => (
             <li key={c._id} className="flex flex-col gap-2 py-4 md:flex-row md:gap-6">
               <div className="w-32 shrink-0 text-sm text-muted">{new Date(c.createdAt).toLocaleDateString()}</div>

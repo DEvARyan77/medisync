@@ -8,6 +8,8 @@ const userSchema = new Schema(
   {
     name: { type: String, required: true, trim: true },
     email: { type: String, required: true, unique: true, lowercase: true, trim: true },
+    // Optional second address; gets a copy of every notification and can be used for "forgot password".
+    alternateEmail: { type: String, lowercase: true, trim: true },
     password: { type: String, required: true, select: false },
     role: { type: String, enum: ROLES, default: "patient" },
     phone: { type: String },

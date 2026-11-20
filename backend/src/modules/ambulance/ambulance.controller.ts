@@ -19,7 +19,7 @@ const requestSchema = z.object({
 });
 
 const populate = [
-  { path: "patient", select: "name email phone" },
+  { path: "patient", select: "name email alternateEmail phone" },
   { path: "driver", select: "name phone vehicleNumber vehicleType" },
 ];
 
@@ -87,10 +87,11 @@ export async function acceptTrip(req: Request, res: Response) {
   if (!trip) throw new ApiError(409, "This request was already taken or cancelled");
 
   await User.findByIdAndUpdate(driverId, { isAvailable: false });
-  const patient = trip.patient as unknown as { name: string; email: string };
+  const patient = trip.patient as unknown as { name: string; email: string; alternateEmail?: string };
   const driver = trip.driver as unknown as { name: string; vehicleNumber?: string; phone?: string };
   sendEmail({
     to: patient.email,
+    cc: patient.alternateEmail,
     name: patient.name,
     ...ambulanceAcceptedEmail({ name: patient.name, driver: driver.name, vehicle: driver.vehicleNumber ?? "-", phone: driver.phone }),
   });

@@ -29,7 +29,7 @@ export function publicUser(user: { toObject(): Record<string, unknown> }) {
 export async function registerPatient(req: Request, res: Response) {
   const data = registerPatientSchema.parse(req.body);
   const user = await User.create({ ...data, role: "patient" });
-  sendEmail({ to: user.email, name: user.name, ...welcomeEmail(user.name) });
+  sendEmail({ to: user.email, cc: user.alternateEmail, name: user.name, ...welcomeEmail(user.name) });
   res.status(201).json({ token: signToken(user.id, user.role), user: publicUser(user) });
 }
 
@@ -37,7 +37,7 @@ export async function registerPatient(req: Request, res: Response) {
 export async function createStaff(req: Request, res: Response) {
   const data = createStaffSchema.parse(req.body);
   const user = await User.create(data);
-  sendEmail({ to: user.email, name: user.name, ...staffWelcomeEmail(user.name, user.role) });
+  sendEmail({ to: user.email, cc: user.alternateEmail, name: user.name, ...staffWelcomeEmail(user.name, user.role) });
   res.status(201).json({ user: publicUser(user) });
 }
 
@@ -48,16 +48,18 @@ const hashToken = (t: string) => crypto.createHash("sha256").update(t).digest("h
 // Always answers the same way, so nobody can use it to find out which emails are registered.
 export async function forgotPassword(req: Request, res: Response) {
   const { email } = z.object({ email: z.string().email() }).parse(req.body);
-  const user = await User.findOne({ email: email.toLowerCase() });
+  const address = email.toLowerCase();
+  // Works with the main email or the alternate one; the link goes to both.
+  const user = (await User.findOne({ email: address })) ?? (await User.findOne({ alternateEmail: address }));
   if (user) {
     const token = crypto.randomBytes(32).toString("hex");
     user.set({ passwordResetTokenHash: hashToken(token), passwordResetExpires: new Date(Date.now() + RESET_MINUTES * 60_000) });
     await user.save();
     const base = env.clientUrl.split(",")[0];
     const url = `${base}/reset-password?token=${token}&email=${encodeURIComponent(user.email)}`;
-    sendEmail({ to: user.email, name: user.name, ...passwordResetEmail({ name: user.name, url, minutes: RESET_MINUTES }) });
+    sendEmail({ to: user.email, cc: user.alternateEmail, name: user.name, ...passwordResetEmail({ name: user.name, url, minutes: RESET_MINUTES }) });
   }
-  res.json({ message: "If that email is registered, a reset link is on its way." });
+  res.json({ message: "If that email is registered, a reset link is on its way (to your main and alternate email)." });
 }
 
 // POST /api/auth/reset-password  { email, token, password }
@@ -76,7 +78,7 @@ export async function resetPassword(req: Request, res: Response) {
   user.password = password;
   user.set({ passwordResetTokenHash: undefined, passwordResetExpires: undefined }); // link works only once
   await user.save();
-  sendEmail({ to: user.email, name: user.name, ...passwordChangedEmail(user.name) });
+  sendEmail({ to: user.email, cc: user.alternateEmail, name: user.name, ...passwordChangedEmail(user.name) });
   res.json({ token: signToken(user.id, user.role), user: publicUser(user) });
 }
 

@@ -79,12 +79,12 @@ export default function DriverPortal() {
       <ErrorText message={error || gpsError} />
 
       <div className="mt-2 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,380px)_minmax(0,1fr)]">
-        <section className="card flex flex-col gap-3">
+        <section className="stagger card flex flex-col gap-3">
           <h2 className="text-lg font-semibold">New requests</h2>
           {trip && <p className="text-sm text-muted">Finish your current trip to accept a new one.</p>}
           {!open.data?.length && <Empty>No open requests.</Empty>}
           {open.data?.map((t) => (
-            <div key={t._id} className={`flex flex-col gap-2 rounded-xl border p-4 ${t.type === "emergency" ? "border-2 border-danger" : "border-line"}`}>
+            <div key={t._id} className={`card-hover flex flex-col gap-2 rounded-xl border p-4 ${t.type === "emergency" ? "animate-pulse-ring border-2 border-danger" : "border-line"}`}>
               <div className="flex flex-wrap justify-between gap-2">
                 <b className="capitalize">{t.type} · {t.patient.name}</b>
                 <span className="text-xs text-muted">{new Date(t.createdAt).toLocaleTimeString()}</span>

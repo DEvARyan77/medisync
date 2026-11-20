@@ -3,6 +3,7 @@ import { api, errorMessage } from "../api/client";
 import { useAuth } from "../context/AuthContext";
 import { ErrorText, PageTitle } from "../components/ui";
 import type { User } from "../types";
+import { DatePicker, localToday } from "../components/DatePicker";
 
 const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 
@@ -12,7 +13,7 @@ export default function ProfilePage() {
   return (
     <>
       <PageTitle>My profile</PageTitle>
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_380px]">
+      <div className="stagger grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_380px]">
         <ProfileForm user={user} />
         <PasswordForm />
       </div>
@@ -22,7 +23,7 @@ export default function ProfilePage() {
 
 function Saved({ text }: { text: string }) {
   if (!text) return null;
-  return <p className="rounded-lg bg-brand-soft px-3 py-2 text-sm text-brand">{text}</p>;
+  return <p key={text} className="animate-pop-in rounded-lg bg-brand-soft px-3 py-2 text-sm text-brand">{text}</p>;
 }
 
 function ProfileForm({ user }: { user: User }) {
@@ -31,6 +32,7 @@ function ProfileForm({ user }: { user: User }) {
   const [form, setForm] = useState({
     name: user.name,
     phone: user.phone ?? "",
+    alternateEmail: user.alternateEmail ?? "",
     gender: user.gender ?? "",
     dateOfBirth: user.dateOfBirth ? user.dateOfBirth.slice(0, 10) : "",
     bloodGroup: user.bloodGroup ?? "",
@@ -54,7 +56,7 @@ function ProfileForm({ user }: { user: User }) {
     setBusy(true);
     setError("");
     // Send only the fields this role may change (the API rejects anything else).
-    const body: Record<string, unknown> = { name: form.name, phone: form.phone };
+    const body: Record<string, unknown> = { name: form.name, phone: form.phone, alternateEmail: form.alternateEmail.trim() };
     if (isPatient) {
       Object.assign(body, {
         gender: form.gender || undefined,
@@ -87,7 +89,12 @@ function ProfileForm({ user }: { user: User }) {
         <div>
           <label className="label" htmlFor="email">Email</label>
           <input id="email" className="input bg-page text-muted" value={user.email} readOnly aria-describedby="email-note" />
-          <p id="email-note" className="mt-1 text-xs text-muted">Contact the clinic to change your email.</p>
+          <p id="email-note" className="mt-1 text-xs text-muted">Used to sign in. Contact the clinic to change it.</p>
+        </div>
+        <div>
+          <label className="label" htmlFor="altEmail">Alternate email <span className="font-normal text-muted">(optional)</span></label>
+          <input id="altEmail" type="email" className="input" placeholder="e.g. work or family email" value={form.alternateEmail} onChange={set("alternateEmail")} aria-describedby="alt-note" />
+          <p id="alt-note" className="mt-1 text-xs text-muted">Gets a copy of every email, and works for "Forgot password".</p>
         </div>
         <div>
           <label className="label" htmlFor="phone">Phone</label>
@@ -97,7 +104,16 @@ function ProfileForm({ user }: { user: User }) {
           <>
             <div>
               <label className="label" htmlFor="dob">Date of birth</label>
-              <input id="dob" type="date" className="input" max={new Date().toLocaleDateString("en-CA")} value={form.dateOfBirth} onChange={set("dateOfBirth")} />
+              <DatePicker
+                id="dob"
+                value={form.dateOfBirth}
+                onChange={(v) => { setForm({ ...form, dateOfBirth: v }); setSaved(""); }}
+                min="1900-01-01"
+                max={localToday()}
+                yearPicker
+                clearable
+                placeholder="Select date of birth"
+              />
             </div>
             <div>
               <label className="label" htmlFor="gender">Gender</label>

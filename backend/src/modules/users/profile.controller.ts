@@ -3,6 +3,7 @@ import { z } from "zod";
 import { ApiError } from "../../utils/ApiError";
 import { User } from "../auth/user.model";
 import { publicUser } from "../auth/auth.controller";
+import { alternateEmail } from "../auth/auth.schema";
 import { sendEmail } from "../../services/email";
 import { passwordChangedEmail } from "../../services/emailTemplates";
 
@@ -12,6 +13,7 @@ const optionalText = z.string().trim().max(200).optional();
 export const baseSchema = z.object({
   name: z.string().trim().min(2).max(80).optional(),
   phone: z.string().trim().regex(/^[0-9+\- ]{6,15}$/, "Enter a valid phone number").optional().or(z.literal("")),
+  alternateEmail,
 });
 
 // Extra fields a patient may edit.
@@ -37,6 +39,9 @@ export async function updateMyProfile(req: Request, res: Response) {
 
   const user = await User.findById(req.user!.id);
   if (!user) throw new ApiError(404, "User not found");
+  if (data.alternateEmail && data.alternateEmail === user.email) {
+    throw new ApiError(400, "Alternate email must be different from your main email");
+  }
   user.set(data);
   await user.save();
   res.json({ user: publicUser(user) });
@@ -56,6 +61,6 @@ export async function changeMyPassword(req: Request, res: Response) {
 
   user.password = newPassword; // hashed by the save hook
   await user.save();
-  sendEmail({ to: user.email, name: user.name, ...passwordChangedEmail(user.name) });
+  sendEmail({ to: user.email, cc: user.alternateEmail, name: user.name, ...passwordChangedEmail(user.name) });
   res.json({ message: "Password changed" });
 }

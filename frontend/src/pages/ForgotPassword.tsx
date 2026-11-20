@@ -8,7 +8,7 @@ import { ErrorText } from "../components/ui";
 function Shell({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen items-start justify-center bg-page p-4 sm:items-center sm:p-6">
-      <div className="card flex w-full max-w-md flex-col gap-5 sm:p-10">{children}</div>
+      <div className="card flex w-full max-w-md animate-pop-in flex-col gap-5 shadow-xl shadow-slate-900/5 sm:p-10">{children}</div>
     </div>
   );
 }
@@ -38,14 +38,14 @@ export function ForgotPassword() {
       <h1 className="text-2xl font-bold">Forgot password</h1>
       {sent ? (
         <>
-          <p className="rounded-lg bg-brand-soft px-3 py-3 text-brand">{sent}</p>
+          <p className="animate-pop-in rounded-lg bg-brand-soft px-3 py-3 text-brand">{sent}</p>
           <p className="text-sm text-muted">The link expires in 30 minutes. Check your spam folder if you don't see it.</p>
         </>
       ) : (
         <form onSubmit={submit} className="flex flex-col gap-5">
-          <p className="text-sm text-muted">Enter your account email and we'll send you a link to choose a new password.</p>
+          <p className="text-sm text-muted">Enter your main or alternate email. We'll send a link to choose a new password to both addresses on your account.</p>
           <div>
-            <label className="label" htmlFor="email">Email</label>
+            <label className="label" htmlFor="email">Main or alternate email</label>
             <input id="email" type="email" autoComplete="email" className="input" value={email} onChange={(e) => setEmail(e.target.value)} required />
           </div>
           <ErrorText message={error} />

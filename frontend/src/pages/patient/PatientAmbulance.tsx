@@ -77,7 +77,7 @@ export default function PatientAmbulance() {
           <AmbulanceMap points={points} height={360} route={!!active} />
           <ErrorText message={gpsError && `${gpsError}. Allow location access to see nearby ambulances.`} />
           {!active && (
-            <ul className="divide-y divide-line text-sm">
+            <ul className="stagger divide-y divide-line text-sm">
               {nearby.data?.map((a) => (
                 <li key={a.driverId} className="flex justify-between py-2">
                   <span><b>{a.vehicleNumber}</b> · {a.vehicleType === "advanced" ? "Advanced life support" : "Basic"}</span>
@@ -138,7 +138,7 @@ function RequestForm({ me, phone, onDone }: { me: { lat: number; lng: number } |
         <input id="ph" className="input" value={form.contactPhone} onChange={(e) => setForm({ ...form, contactPhone: e.target.value })} required />
       </div>
       <ErrorText message={error} />
-      <button className="btn-danger h-13 text-lg" disabled={busy}>{busy ? "Sending…" : "Request ambulance now"}</button>
+      <button className="btn-danger animate-pulse-ring h-13 text-lg" disabled={busy}>{busy ? "Sending…" : "Request ambulance now"}</button>
     </form>
   );
 }
@@ -168,7 +168,7 @@ function LiveTrip({ trip, onChange }: { trip: Trip; onChange: () => void }) {
       ) : (
         <p className="rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-900">Finding the nearest available ambulance…</p>
       )}
-      <ol className="flex flex-col gap-2 border-l-2 border-line pl-4 text-sm">
+      <ol className="stagger flex flex-col gap-2 border-l-2 border-line pl-4 text-sm">
         {steps.map((s) => (
           <li key={s} className={reached.has(s) ? "font-semibold" : "text-muted"}>
             {stepLabels[s]} {timeOf(s) && <span className="font-normal text-muted">· {new Date(timeOf(s)!).toLocaleTimeString()}</span>}
