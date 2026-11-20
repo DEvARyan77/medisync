@@ -5,7 +5,7 @@
 //  - demo ambulances keep sharing a (simulated) GPS position while the server is awake
 import { Types } from "mongoose";
 import { User } from "../modules/auth/user.model";
-import { Appointment, AppointmentStatus, Counter } from "../modules/appointments/appointment.model";
+import { ACTIVE_STATUSES, Appointment, AppointmentStatus, Counter } from "../modules/appointments/appointment.model";
 import { Consultation } from "../modules/consultations/consultation.model";
 import { Prescription } from "../modules/prescriptions/prescription.model";
 import { addDays, clinicDateTime, clinicNow } from "../utils/clinicTime";
@@ -156,8 +156,11 @@ export async function seedDemoData(): Promise<void> {
     console.log("demo: visit history added");
   }
 
-  // 3. Today's OPD queue (once per day)
-  if (!(await Appointment.exists({ date: now.date }))) {
+  // 3. Today's OPD queue (once per day). A marker document records that today's demo
+  // queue exists, so real bookings made earlier in the day don't stop it from being added.
+  const marker = `demo-queue-${now.date}`;
+  if (!(await Counter.exists({ _id: marker }))) {
+    await Counter.create({ _id: marker, seq: 1 });
     const today: [Id, Id, string, AppointmentStatus, number][] = [
       // patient, doctor, slot, status, case
       [priya, arjun, "09:00", "completed", 0],
@@ -172,8 +175,12 @@ export async function seedDemoData(): Promise<void> {
       [rahul, neha, "12:00", "booked", 5],
       [mohit, arjun, "12:30", "booked", 1],
     ];
-    let token = 0;
+    // Continue after any tokens real check-ins already used today.
+    let token = (await Counter.findById(now.date))?.seq ?? 0;
+    let dispensedSoFar = 0;
     for (const [patient, doctor, slot, status, caseIndex] of today) {
+      // Skip a slot that someone has really booked.
+      if (await Appointment.exists({ doctor, date: now.date, slot, status: { $in: ACTIVE_STATUSES } })) continue;
       const checkedIn = ["checked_in", "in_consultation", "completed"].includes(status);
       if (checkedIn) token += 1;
       const appt = await Appointment.create({
@@ -187,7 +194,7 @@ export async function seedDemoData(): Promise<void> {
       });
       // Finished visits get a prescription waiting at the pharmacy (two already handed over).
       if (status === "completed") {
-        await addVisit({ patient, doctor, appointment: appt._id, caseIndex, at: clinicDateTime(now.date, slot), dispensed: token <= 2 });
+        await addVisit({ patient, doctor, appointment: appt._id, caseIndex, at: clinicDateTime(now.date, slot), dispensed: dispensedSoFar++ < 2 });
       }
     }
     // Next walk-in gets the next token number.
