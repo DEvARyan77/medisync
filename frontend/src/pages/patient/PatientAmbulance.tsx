@@ -66,7 +66,7 @@ export default function PatientAmbulance() {
   return (
     <>
       <PageTitle>{active ? "Your ambulance" : "Request an ambulance"}</PageTitle>
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {active ? <LiveTrip trip={active} onChange={trip.refresh} /> : <RequestForm me={me} phone={user?.phone ?? ""} onDone={trip.refresh} />}
 
         <section className="card flex flex-col gap-3">

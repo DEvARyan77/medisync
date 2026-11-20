@@ -78,7 +78,7 @@ export default function DriverPortal() {
       <p className="-mt-4 mb-6 text-sm text-muted">Vehicle {user?.vehicleNumber} · {user?.vehicleType === "advanced" ? "Advanced life support" : "Basic life support"}</p>
       <ErrorText message={error || gpsError} />
 
-      <div className="mt-2 grid gap-6 lg:grid-cols-[minmax(0,380px)_1fr]">
+      <div className="mt-2 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,380px)_minmax(0,1fr)]">
         <section className="card flex flex-col gap-3">
           <h2 className="text-lg font-semibold">New requests</h2>
           {trip && <p className="text-sm text-muted">Finish your current trip to accept a new one.</p>}

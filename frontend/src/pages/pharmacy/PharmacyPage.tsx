@@ -34,8 +34,8 @@ export default function PharmacyPage() {
           </button>
         ))}
       </div>
-      <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
-        <aside className="card flex flex-col gap-2 p-4">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[320px_minmax(0,1fr)]">
+        <aside className="card flex max-h-72 flex-col gap-2 overflow-y-auto p-3 sm:p-4 lg:max-h-none">
           {list.data?.map((p) => (
             <button key={p._id} onClick={() => setSelectedId(p._id)} className={`rounded-lg border p-3 text-left ${selected?._id === p._id ? "border-2 border-brand bg-brand-soft" : "border-line"}`}>
               <div className="font-semibold">{p.patient.name}</div>
@@ -54,8 +54,17 @@ export default function PharmacyPage() {
               </div>
               <StatusPill status={selected.status} />
             </div>
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[560px] text-left text-sm">
+            {/* Phones: stacked medicine cards */}
+            <ul className="flex flex-col gap-2 sm:hidden">
+              {selected.items.map((m, i) => (
+                <li key={i} className="rounded-lg bg-page p-3 text-sm">
+                  <div className="font-semibold">{m.medicine} <span className="font-normal">{m.dose}</span></div>
+                  <div className="text-muted">{m.frequency} · {m.days} days{m.instructions && ` · ${m.instructions}`}</div>
+                </li>
+              ))}
+            </ul>
+            <div className="hidden overflow-x-auto sm:block">
+              <table className="w-full min-w-[520px] text-left text-sm">
                 <thead className="text-xs text-muted uppercase"><tr><th className="py-2">Medicine</th><th>Dose</th><th>Frequency</th><th>Days</th><th>Instructions</th></tr></thead>
                 <tbody>
                   {selected.items.map((m, i) => (
@@ -66,7 +75,7 @@ export default function PharmacyPage() {
             </div>
             <ErrorText message={error} />
             {selected.status === "pending" && (
-              <div className="mt-4 flex justify-end"><button className="btn-primary" onClick={() => dispense(selected._id)}>Mark dispensed</button></div>
+              <div className="mt-4 flex justify-end"><button className="btn-primary w-full sm:w-auto" onClick={() => dispense(selected._id)}>Mark dispensed</button></div>
             )}
           </section>
         )}

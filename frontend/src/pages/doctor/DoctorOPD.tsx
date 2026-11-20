@@ -22,14 +22,18 @@ export default function DoctorOPD() {
   return (
     <>
       <PageTitle>My OPD · today</PageTitle>
-      <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
-        <aside className="card flex flex-col gap-2 p-4">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[280px_minmax(0,1fr)]">
+        <aside className="card flex max-h-72 flex-col gap-2 overflow-y-auto p-3 sm:p-4 lg:max-h-none">
           <h2 className="px-2 text-xs font-semibold text-muted uppercase">Queue ({waiting.length})</h2>
           {waiting.map((a) => (
             <button
               key={a._id}
-              onClick={() => setSelectedId(a._id)}
-              className={`flex items-center justify-between rounded-lg px-3 py-3 text-left ${selectedId === a._id ? "bg-brand-soft font-semibold text-brand" : "hover:bg-page"}`}
+              onClick={() => {
+                setSelectedId(a._id);
+                // On phones the form is below the queue, so bring it into view.
+                setTimeout(() => document.getElementById("consult")?.scrollIntoView({ behavior: "smooth" }), 50);
+              }}
+              className={`flex items-center justify-between gap-2 rounded-lg px-3 py-3 text-left ${selectedId === a._id ? "bg-brand-soft font-semibold text-brand" : "hover:bg-page"}`}
             >
               <span>{a.token} · {a.patient.name}</span>
               <StatusPill status={a.status} />
@@ -98,17 +102,17 @@ function ConsultationForm({ appointment, onDone }: { appointment: Appointment; o
   }
 
   return (
-    <div className="grid gap-6 xl:grid-cols-[1fr_320px]">
-      <div className="flex flex-col gap-6">
+    <div id="consult" className="grid min-w-0 grid-cols-1 scroll-mt-16 gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
+      <div className="flex min-w-0 flex-col gap-6">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
-            <h2 className="text-2xl font-bold">{p.name} <span className="font-normal text-muted">· {age(p.dateOfBirth)} {p.gender}</span></h2>
+            <h2 className="text-xl font-bold sm:text-2xl">{p.name} <span className="font-normal text-muted">· {age(p.dateOfBirth)} {p.gender}</span></h2>
             <p className="text-sm text-muted">
               Token {appointment.token} · Allergies:{" "}
               <b className="text-amber-800">{p.allergies?.length ? p.allergies.join(", ") : "none recorded"}</b>
             </p>
           </div>
-          <button className="btn-primary" disabled={busy || !chiefComplaint || !diagnosis} onClick={finish}>
+          <button className="btn-primary w-full sm:w-auto" disabled={busy || !chiefComplaint || !diagnosis} onClick={finish}>
             {busy ? "Saving…" : "Finish & send to pharmacy"}
           </button>
         </div>
@@ -140,13 +144,13 @@ function ConsultationForm({ appointment, onDone }: { appointment: Appointment; o
           </div>
           <div className="flex flex-col gap-3">
             {meds.map((m, i) => (
-              <div key={i} className="grid grid-cols-2 gap-2 md:grid-cols-[2fr_1fr_1fr_80px_2fr_auto]">
-                <input aria-label="Medicine" className="input" placeholder="Medicine" value={m.medicine} onChange={(e) => setMed(i, "medicine", e.target.value)} />
+              <div key={i} className="grid grid-cols-3 gap-2 rounded-lg border border-line p-2 md:grid-cols-[2fr_1fr_1fr_80px_2fr_auto] md:border-0 md:p-0">
+                <input aria-label="Medicine" className="input col-span-3 md:col-span-1" placeholder="Medicine" value={m.medicine} onChange={(e) => setMed(i, "medicine", e.target.value)} />
                 <input aria-label="Dose" className="input" placeholder="500 mg" value={m.dose} onChange={(e) => setMed(i, "dose", e.target.value)} />
                 <input aria-label="Frequency" className="input" placeholder="1-0-1" value={m.frequency} onChange={(e) => setMed(i, "frequency", e.target.value)} />
                 <input aria-label="Days" type="number" min={1} className="input" value={m.days} onChange={(e) => setMed(i, "days", e.target.value)} />
-                <input aria-label="Instructions" className="input" placeholder="after food" value={m.instructions} onChange={(e) => setMed(i, "instructions", e.target.value)} />
-                <button aria-label="Remove medicine" className="text-sm text-danger" onClick={() => setMeds(meds.filter((_, j) => j !== i))}>Remove</button>
+                <input aria-label="Instructions" className="input col-span-2 md:col-span-1" placeholder="after food" value={m.instructions} onChange={(e) => setMed(i, "instructions", e.target.value)} />
+                <button aria-label="Remove medicine" className="min-h-11 text-sm font-semibold text-danger" onClick={() => setMeds(meds.filter((_, j) => j !== i))}>Remove</button>
               </div>
             ))}
           </div>

@@ -40,19 +40,19 @@ export default function Login() {
 
   return (
     <div className="flex min-h-screen flex-col bg-page md:flex-row">
-      <section className="flex flex-1 flex-col justify-between gap-10 bg-brand p-10 text-white md:p-16">
-        <div className="font-display text-3xl font-bold">MediSync</div>
+      <section className="flex flex-col justify-between gap-3 bg-brand px-6 py-6 text-white md:flex-1 md:gap-10 md:p-16">
+        <div className="font-display text-2xl font-bold md:text-3xl">MediSync</div>
         <div className="max-w-lg">
-          <h1 className="font-display text-4xl leading-tight font-bold md:text-5xl">One platform for the whole OPD visit.</h1>
-          <p className="mt-4 text-lg text-brand-soft">
+          <h1 className="font-display text-2xl leading-tight font-bold md:text-5xl">One platform for the whole OPD visit.</h1>
+          <p className="mt-2 text-brand-soft md:mt-4 md:text-lg">
             Appointments, token queue, consultation, e-prescriptions, pharmacy and ambulance service.
           </p>
         </div>
-        <div className="text-sm text-brand-soft">Patient · Receptionist · Doctor · Pharmacist · Driver · Admin</div>
+        <div className="hidden text-sm text-brand-soft md:block">Patient · Receptionist · Doctor · Pharmacist · Driver · Admin</div>
       </section>
 
-      <section className="flex flex-1 items-center justify-center p-6">
-        <form onSubmit={onSubmit} className="card flex w-full max-w-md flex-col gap-5 p-10">
+      <section className="flex flex-1 items-start justify-center p-4 sm:p-6 md:items-center">
+        <form onSubmit={onSubmit} className="card flex w-full max-w-md flex-col gap-5 sm:p-10">
           <h2 className="text-2xl font-bold">Sign in</h2>
           <div>
             <label className="label" htmlFor="email">Email</label>

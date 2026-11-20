@@ -30,8 +30,8 @@ export function StatusPill({ status }: { status: string }) {
 
 export function PageTitle({ children, action }: { children: ReactNode; action?: ReactNode }) {
   return (
-    <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-      <h1 className="text-2xl font-bold sm:text-3xl">{children}</h1>
+    <div className="mb-5 flex flex-wrap items-center justify-between gap-3 sm:mb-6 sm:gap-4">
+      <h1 className="text-xl font-bold sm:text-3xl">{children}</h1>
       {action}
     </div>
   );
@@ -39,9 +39,9 @@ export function PageTitle({ children, action }: { children: ReactNode; action?: 
 
 export function StatCard({ label, value }: { label: string; value: ReactNode }) {
   return (
-    <div className="card p-5">
+    <div className="card p-3 sm:p-5">
       <div className="text-xs font-semibold tracking-wide text-muted uppercase">{label}</div>
-      <div className="font-display text-3xl font-bold">{value}</div>
+      <div className="font-display text-2xl font-bold sm:text-3xl">{value}</div>
     </div>
   );
 }

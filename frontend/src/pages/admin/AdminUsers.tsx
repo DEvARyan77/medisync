@@ -65,7 +65,19 @@ export default function AdminUsers() {
         <div className="md:col-span-3"><ErrorText message={error} />{msg && <p className="text-sm text-brand">{msg}</p>}</div>
       </form>
 
-      <section className="card overflow-x-auto p-0">
+      <ul className="flex flex-col gap-2 md:hidden">
+        {users.data?.map((u) => (
+          <li key={u._id} className="card p-3">
+            <div className="flex justify-between gap-2">
+              <b>{u.name}</b>
+              <span className="text-sm text-muted capitalize">{u.role}</span>
+            </div>
+            <div className="text-sm break-all text-muted">{u.email}</div>
+            {(u.department ?? u.vehicleNumber) && <div className="text-sm text-muted">{u.department ?? u.vehicleNumber}</div>}
+          </li>
+        ))}
+      </ul>
+      <section className="card hidden overflow-x-auto p-0 md:block sm:p-0">
         <table className="w-full min-w-[640px] text-left text-sm">
           <thead className="text-xs text-muted uppercase"><tr><th className="px-6 py-4">Name</th><th>Email</th><th>Role</th><th>Details</th></tr></thead>
           <tbody>

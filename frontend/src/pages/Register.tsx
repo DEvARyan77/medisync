@@ -28,8 +28,8 @@ export default function Register() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-page p-6">
-      <form onSubmit={onSubmit} className="card grid w-full max-w-xl gap-4 p-10 sm:grid-cols-2">
+    <div className="flex min-h-screen items-start justify-center bg-page p-4 sm:items-center sm:p-6">
+      <form onSubmit={onSubmit} className="card grid w-full max-w-xl gap-4 sm:grid-cols-2 sm:p-10">
         <h1 className="text-2xl font-bold sm:col-span-2">Create patient account</h1>
         <div className="sm:col-span-2"><label className="label" htmlFor="name">Full name</label><input id="name" className="input" value={form.name} onChange={set("name")} required /></div>
         <div><label className="label" htmlFor="email">Email</label><input id="email" type="email" className="input" value={form.email} onChange={set("email")} required /></div>
