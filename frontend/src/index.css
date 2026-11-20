@@ -1,0 +1,24 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", system-ui, sans-serif;
+  --font-display: "Space Grotesk", "Inter", sans-serif;
+  --color-brand: #0f766e;
+  --color-brand-dark: #115e59;
+  --color-brand-soft: #e6f4f1;
+  --color-line: #d0d4da;
+  --color-muted: #5a6270;
+  --color-page: #f4f5f7;
+  --color-danger: #b91c1c;
+}
+
+/* Reusable classes (Tailwind v4 custom utilities) */
+@utility card { @apply rounded-xl border border-line bg-white p-6; }
+@utility input { @apply h-11 w-full rounded-lg border border-line bg-white px-3 text-[15px] outline-none focus:border-brand; }
+@utility label { @apply mb-1.5 block text-sm font-medium; }
+@utility btn { @apply inline-flex h-11 items-center justify-center rounded-lg px-5 font-semibold disabled:opacity-50; }
+@utility btn-primary { @apply btn bg-brand text-white hover:bg-brand-dark; }
+@utility btn-outline { @apply btn border border-brand bg-white text-brand hover:bg-brand-soft; }
+@utility btn-ghost { @apply btn border border-line bg-white text-slate-800 hover:bg-page; }
+@utility btn-danger { @apply btn bg-danger text-white hover:bg-red-800; }
+@utility pill { @apply inline-block rounded-full px-2.5 py-1 text-xs font-semibold; }
