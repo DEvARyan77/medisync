@@ -16,6 +16,17 @@ const userSchema = new Schema(
     gender: { type: String, enum: ["male", "female", "other"] },
     dateOfBirth: { type: Date },
     allergies: { type: [String], default: [] },
+    bloodGroup: { type: String, enum: ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"] },
+    address: { type: String, trim: true },
+    emergencyContact: {
+      name: { type: String, trim: true },
+      phone: { type: String, trim: true },
+      relation: { type: String, trim: true },
+    },
+
+    // Forgot-password: only a hash of the emailed token is stored.
+    passwordResetTokenHash: { type: String, select: false },
+    passwordResetExpires: { type: Date, select: false },
 
     // Doctor-only fields
     department: { type: String },

@@ -2,8 +2,13 @@ import { Router, Request, Response } from "express";
 import { asyncHandler } from "../../utils/asyncHandler";
 import { authorize, protect } from "../../middleware/auth";
 import { User } from "../auth/user.model";
+import { changeMyPassword, updateMyProfile } from "./profile.controller";
 
 const router = Router();
+
+// Own profile (every role)
+router.patch("/me", protect, asyncHandler(updateMyProfile));
+router.patch("/me/password", protect, asyncHandler(changeMyPassword));
 
 // GET /api/users/doctors?department=Cardiology  (anyone logged in, used for booking)
 router.get(

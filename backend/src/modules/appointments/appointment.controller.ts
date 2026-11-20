@@ -3,6 +3,8 @@ import { z } from "zod";
 import { ApiError } from "../../utils/ApiError";
 import { addDays, clinicNow, isPastSlot } from "../../utils/clinicTime";
 import { User } from "../auth/user.model";
+import { sendEmail } from "../../services/email";
+import { appointmentBookedEmail, appointmentCancelledEmail, checkedInEmail } from "../../services/emailTemplates";
 import { ACTIVE_STATUSES, Appointment, AppointmentStatus, OPD_SLOTS, nextToken } from "./appointment.model";
 
 const dateString = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Use YYYY-MM-DD");
@@ -25,7 +27,7 @@ const MAX_DAYS_AHEAD = 30;
 const today = () => clinicNow().date;
 
 const populate = [
-  { path: "patient", select: "name phone gender dateOfBirth allergies" },
+  { path: "patient", select: "name email phone gender dateOfBirth allergies bloodGroup" },
   { path: "doctor", select: "name department specialization" },
 ];
 
@@ -76,7 +78,19 @@ export async function bookAppointment(req: Request, res: Response) {
     slot: data.slot,
     reason: data.reason,
   });
-  res.status(201).json({ appointment: await appointment.populate(populate) });
+  await appointment.populate(populate);
+  const p = appointment.patient as unknown as Person;
+  sendEmail({
+    to: p.email,
+    name: p.name,
+    ...appointmentBookedEmail({ name: p.name, doctor: doctor.name, department: doctor.department ?? undefined, date: data.date, slot: data.slot }),
+  });
+  res.status(201).json({ appointment });
+}
+
+interface Person {
+  name: string;
+  email: string;
 }
 
 // GET /api/appointments/mine  (patient's own appointments)
@@ -138,5 +152,18 @@ export async function updateStatus(req: Request, res: Response) {
   }
   appointment.status = status;
   await appointment.save();
-  res.json({ appointment: await appointment.populate(populate) });
+  await appointment.populate(populate);
+
+  const patient = appointment.patient as unknown as Person;
+  const doctor = appointment.doctor as unknown as Person;
+  if (status === "checked_in") {
+    sendEmail({ to: patient.email, name: patient.name, ...checkedInEmail({ name: patient.name, token: appointment.token!, doctor: doctor.name }) });
+  } else if (status === "cancelled") {
+    sendEmail({
+      to: patient.email,
+      name: patient.name,
+      ...appointmentCancelledEmail({ name: patient.name, doctor: doctor.name, date: appointment.date, slot: appointment.slot, byClinic: role !== "patient" }),
+    });
+  }
+  res.json({ appointment });
 }

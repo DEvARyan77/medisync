@@ -40,15 +40,16 @@ export default function Login() {
 
   return (
     <div className="flex min-h-screen flex-col bg-page md:flex-row">
-      <section className="flex flex-col justify-between gap-3 bg-brand px-6 py-6 text-white md:flex-1 md:gap-10 md:p-16">
-        <div className="font-display text-2xl font-bold md:text-3xl">MediSync</div>
+      {/* Brand panel: tablets and desktops only. Phones get just the form. */}
+      <section className="hidden flex-1 flex-col justify-between gap-10 bg-brand p-16 text-white md:flex">
+        <Link to="/" className="font-display text-3xl font-bold">MediSync</Link>
         <div className="max-w-lg">
-          <h1 className="font-display text-2xl leading-tight font-bold md:text-5xl">One platform for the whole OPD visit.</h1>
-          <p className="mt-2 text-brand-soft md:mt-4 md:text-lg">
+          <h1 className="font-display text-5xl leading-tight font-bold">One platform for the whole OPD visit.</h1>
+          <p className="mt-4 text-lg text-brand-soft">
             Appointments, token queue, consultation, e-prescriptions, pharmacy and ambulance service.
           </p>
         </div>
-        <div className="hidden text-sm text-brand-soft md:block">Patient · Receptionist · Doctor · Pharmacist · Driver · Admin</div>
+        <div className="text-sm text-brand-soft">Patient · Receptionist · Doctor · Pharmacist · Driver · Admin</div>
       </section>
 
       <section className="flex flex-1 items-start justify-center p-4 sm:p-6 md:items-center">
@@ -61,6 +62,9 @@ export default function Login() {
           <div>
             <label className="label" htmlFor="password">Password</label>
             <input id="password" type="password" className="input" value={password} onChange={(e) => setPassword(e.target.value)} required />
+          </div>
+          <div className="-mt-3 text-right">
+            <Link to="/forgot-password" className="text-sm font-semibold text-brand">Forgot password?</Link>
           </div>
           <ErrorText message={error} />
           <button className="btn-primary h-12" disabled={busy}>{busy ? "Signing in…" : "Sign in"}</button>

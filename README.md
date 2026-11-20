@@ -8,7 +8,7 @@ A full-stack hospital OPD platform: patients book appointments, reception runs a
 
 | Role | What they do |
 |---|---|
-| Patient | Register, book OPD slots, see token and health timeline, request an ambulance and see nearby ambulances on a map |
+| Patient | Register, edit profile (blood group, allergies, emergency contact), book OPD slots, see token and health timeline, request an ambulance and see nearby ambulances on a map |
 | Receptionist | Daily OPD queue: check in (assigns token), send in, no-show; sees active ambulance trips |
 | Doctor | Own queue, patient history, vitals, diagnosis, e-prescription |
 | Pharmacist | Incoming prescriptions, mark dispensed |
@@ -85,6 +85,23 @@ medisync/
 | GET | /api/ambulance/nearby?lat&lng | logged in |
 | POST | /api/ambulance | patient, reception |
 | PATCH | /api/ambulance/location · /:id/accept · /:id/status | driver |
+
+## Email notifications
+
+Sent through [Brevo](https://www.brevo.com)'s HTTP API (free: 300 emails/day). HTTP is used because Render's free plan blocks SMTP ports.
+
+| When | Who gets it |
+|---|---|
+| Patient signs up | Welcome |
+| Admin creates a staff account | Account created |
+| Appointment booked / cancelled | Patient |
+| Checked in at reception | Patient (token number) |
+| Consultation finished | Patient (diagnosis + prescription) |
+| Medicines dispensed | Patient |
+| Ambulance accepted | Patient (driver + vehicle) |
+| Forgot password / password changed | User |
+
+Set `BREVO_API_KEY` and `EMAIL_FROM` (a sender verified in Brevo). Without them, emails are only written to the server log. Demo accounts (`@medisync.dev`) never receive mail. `/api/health` shows `"email": "brevo"` when it is configured.
 
 ## Deploy (free tiers)
 

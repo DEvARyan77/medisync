@@ -3,6 +3,8 @@ import { z } from "zod";
 import { ApiError } from "../../utils/ApiError";
 import { User } from "../auth/user.model";
 import { ACTIVE_TRIP_STATUSES, AmbulanceRequest, TripStatus } from "./ambulance.model";
+import { sendEmail } from "../../services/email";
+import { ambulanceAcceptedEmail } from "../../services/emailTemplates";
 
 const latLng = z.object({ lat: z.number().min(-90).max(90), lng: z.number().min(-180).max(180) });
 
@@ -17,7 +19,7 @@ const requestSchema = z.object({
 });
 
 const populate = [
-  { path: "patient", select: "name phone" },
+  { path: "patient", select: "name email phone" },
   { path: "driver", select: "name phone vehicleNumber vehicleType" },
 ];
 
@@ -85,6 +87,13 @@ export async function acceptTrip(req: Request, res: Response) {
   if (!trip) throw new ApiError(409, "This request was already taken or cancelled");
 
   await User.findByIdAndUpdate(driverId, { isAvailable: false });
+  const patient = trip.patient as unknown as { name: string; email: string };
+  const driver = trip.driver as unknown as { name: string; vehicleNumber?: string; phone?: string };
+  sendEmail({
+    to: patient.email,
+    name: patient.name,
+    ...ambulanceAcceptedEmail({ name: patient.name, driver: driver.name, vehicle: driver.vehicleNumber ?? "-", phone: driver.phone }),
+  });
   res.json({ trip });
 }
 

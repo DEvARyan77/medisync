@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { Navigate, NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
+import { Link, Navigate, NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { homeFor } from "./ProtectedRoute";
 import type { Role } from "../types";
 
 const menus: Record<Role, { to: string; label: string; danger?: boolean }[]> = {
@@ -46,9 +47,17 @@ export function Layout() {
           {m.label}
         </NavLink>
       ))}
+      <NavLink
+        to="/profile"
+        className={({ isActive }) => `rounded-lg px-3 py-3 ${isActive ? "bg-brand-soft font-semibold text-brand" : "hover:bg-page"}`}
+      >
+        My profile
+      </NavLink>
       <div className="mt-auto border-t border-line pt-4 text-sm">
-        <div className="px-3 font-semibold">{user.name}</div>
-        <div className="px-3 text-muted capitalize">{user.role}</div>
+        <Link to="/profile" className="block rounded-lg px-3 py-1 hover:bg-page">
+          <div className="font-semibold">{user.name}</div>
+          <div className="text-muted capitalize">{user.role}</div>
+        </Link>
         <button
           className="mt-2 min-h-11 w-full rounded-lg px-3 py-2 text-left text-muted hover:bg-page"
           onClick={() => {
@@ -67,7 +76,7 @@ export function Layout() {
       {/* Phone / small tablet: top bar with a menu button */}
       <header className="sticky top-0 z-[1000] border-b border-line bg-white md:hidden">
         <div className="flex h-14 items-center justify-between px-4">
-          <span className="font-display text-xl font-bold text-brand">MediSync</span>
+          <Link to={homeFor[user.role]} className="font-display text-xl font-bold text-brand">MediSync</Link>
           <button
             className="flex h-11 w-11 items-center justify-center rounded-lg hover:bg-page"
             aria-label={menuOpen ? "Close menu" : "Open menu"}
@@ -84,7 +93,7 @@ export function Layout() {
 
       {/* Desktop: fixed sidebar */}
       <nav className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col gap-1 border-r border-line bg-white p-5 md:flex">
-        <div className="font-display px-3 pb-4 text-2xl font-bold text-brand">MediSync</div>
+        <Link to={homeFor[user.role]} className="font-display px-3 pb-4 text-2xl font-bold text-brand">MediSync</Link>
         {nav}
       </nav>
 

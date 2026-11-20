@@ -12,6 +12,10 @@ import DoctorOPD from "./pages/doctor/DoctorOPD";
 import PharmacyPage from "./pages/pharmacy/PharmacyPage";
 import DriverPortal from "./pages/driver/DriverPortal";
 import AdminUsers from "./pages/admin/AdminUsers";
+import ProfilePage from "./pages/ProfilePage";
+import { ForgotPassword, ResetPassword } from "./pages/ForgotPassword";
+
+const ALL_ROLES = ["patient", "doctor", "receptionist", "pharmacist", "driver", "admin"] as const;
 
 export default function App() {
   const { user, loading } = useAuth();
@@ -21,8 +25,13 @@ export default function App() {
     <Routes>
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
 
       <Route element={<Layout />}>
+        <Route element={<ProtectedRoute roles={[...ALL_ROLES]} />}>
+          <Route path="/profile" element={<ProfilePage />} />
+        </Route>
         <Route element={<ProtectedRoute roles={["patient"]} />}>
           <Route path="/patient" element={<PatientDashboard />} />
           <Route path="/patient/history" element={<PatientHistory />} />

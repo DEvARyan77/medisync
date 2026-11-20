@@ -8,6 +8,8 @@ interface AuthState {
   login: (email: string, password: string) => Promise<User>;
   register: (data: Record<string, unknown>) => Promise<User>;
   logout: () => void;
+  /** Replace the signed-in user (after a profile update) or sign in with a token (after a password reset). */
+  setSession: (u: User, token?: string) => void;
 }
 
 const AuthContext = createContext<AuthState | null>(null);
@@ -47,7 +49,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
   };
 
-  return <AuthContext.Provider value={{ user, loading, login, register, logout }}>{children}</AuthContext.Provider>;
+  const setSession = (u: User, token?: string) => {
+    if (token) localStorage.setItem("token", token);
+    setUser(u);
+  };
+
+  return <AuthContext.Provider value={{ user, loading, login, register, logout, setSession }}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {

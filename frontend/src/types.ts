@@ -9,6 +9,9 @@ export interface User {
   gender?: string;
   dateOfBirth?: string;
   allergies?: string[];
+  bloodGroup?: string;
+  address?: string;
+  emergencyContact?: { name?: string; phone?: string; relation?: string };
   department?: string;
   specialization?: string;
   vehicleNumber?: string;

@@ -108,7 +108,8 @@ function ConsultationForm({ appointment, onDone }: { appointment: Appointment; o
           <div>
             <h2 className="text-xl font-bold sm:text-2xl">{p.name} <span className="font-normal text-muted">· {age(p.dateOfBirth)} {p.gender}</span></h2>
             <p className="text-sm text-muted">
-              Token {appointment.token} · Allergies:{" "}
+              Token {appointment.token}
+              {p.bloodGroup && <> · Blood group <b>{p.bloodGroup}</b></>} · Allergies:{" "}
               <b className="text-amber-800">{p.allergies?.length ? p.allergies.join(", ") : "none recorded"}</b>
             </p>
           </div>
