@@ -77,6 +77,7 @@ export default function Login() {
           <p className="text-center text-sm text-muted">
             New patient? <Link className="font-semibold text-brand" to="/register">Create an account</Link>
           </p>
+          <p className="-mt-2 text-center text-xs text-muted"><Link to="/privacy" className="underline">Privacy policy</Link></p>
 
           <div className="border-t border-line pt-4">
             <p className="mb-2 text-xs font-semibold text-muted uppercase">Demo logins (password123)</p>

@@ -4,6 +4,7 @@ import { Layout } from "./components/Layout";
 import { ProtectedRoute, homeFor } from "./components/ProtectedRoute";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import Privacy from "./pages/Privacy";
 import PatientDashboard from "./pages/patient/PatientDashboard";
 import PatientHistory from "./pages/patient/PatientHistory";
 import PatientAmbulance from "./pages/patient/PatientAmbulance";
@@ -24,6 +25,7 @@ export default function App() {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
+      <Route path="/privacy" element={<Privacy />} />
       <Route path="/register" element={<Register />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
