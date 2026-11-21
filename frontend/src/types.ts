@@ -18,6 +18,8 @@ export interface User {
   vehicleNumber?: string;
   vehicleType?: string;
   isAvailable?: boolean;
+  hasPassword?: boolean;
+  authProviders?: { provider: "google" | "facebook" }[];
 }
 
 export type AppointmentStatus = "booked" | "checked_in" | "in_consultation" | "completed" | "cancelled" | "no_show";
@@ -31,6 +33,7 @@ export interface Appointment {
   reason?: string;
   status: AppointmentStatus;
   token?: string;
+  tokenNumber?: number;
 }
 
 export interface Medicine {

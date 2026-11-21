@@ -17,7 +17,7 @@ export interface EmailMessage {
 }
 
 // Demo accounts use this made-up domain; never try to deliver to it.
-const SKIP_DOMAINS = ["medisync.dev"];
+const SKIP_DOMAINS = ["medisync.dev", "deleted.invalid"];
 
 export function emailEnabled(): boolean {
   return Boolean(process.env.BREVO_API_KEY && process.env.EMAIL_FROM);

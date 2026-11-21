@@ -11,8 +11,10 @@ interface QueueResponse {
   appointments: Appointment[];
 }
 
-function QueueActions({ a, setStatus, full = false }: { a: Appointment; setStatus: (id: string, s: string) => void; full?: boolean }) {
+function QueueActions({ a, setStatus, full = false, isToday }: { a: Appointment; setStatus: (id: string, s: string) => void; full?: boolean; isToday: boolean }) {
   const size = full ? "flex-1" : "h-9 px-3 text-sm";
+  // Tokens are given only on the day of the visit
+  if (!isToday) return full ? null : <span className="text-muted">—</span>;
   if (a.status === "booked") {
     return (
       <div className="flex gap-2">
@@ -46,7 +48,13 @@ export default function ReceptionQueue() {
   }
 
   const s = queue.data?.stats;
-  const rows = (queue.data?.appointments ?? []).filter((a) =>
+  const isToday = date === today();
+  // In consultation, then waiting by token, then bookings by time, then finished / missed
+  const order: Record<string, number> = { in_consultation: 0, checked_in: 1, booked: 2, completed: 3, no_show: 4, cancelled: 5 };
+  const sorted = [...(queue.data?.appointments ?? [])].sort(
+    (x, y) => order[x.status] - order[y.status] || (x.tokenNumber ?? 0) - (y.tokenNumber ?? 0) || x.slot.localeCompare(y.slot)
+  );
+  const rows = sorted.filter((a) =>
     `${a.patient.name} ${a.patient.phone ?? ""} ${a.token ?? ""}`.toLowerCase().includes(search.toLowerCase())
   );
 
@@ -74,6 +82,7 @@ export default function ReceptionQueue() {
       </div>
 
       <ErrorText message={error} />
+      {!isToday && <p className="mb-3 rounded-lg bg-page px-3 py-2 text-sm text-muted">Viewing {date < today() ? "a past" : "a future"} day. Check-in and tokens are only for today.</p>}
       {/* Phones: one card per patient */}
       <section className="stagger mt-2 flex flex-col gap-3 md:hidden">
         {rows.map((a) => (
@@ -88,7 +97,7 @@ export default function ReceptionQueue() {
               </div>
               <StatusPill status={a.status} />
             </div>
-            <QueueActions a={a} setStatus={setStatus} full />
+            <QueueActions a={a} setStatus={setStatus} full isToday={isToday} />
           </div>
         ))}
         {rows.length === 0 && <div className="card"><Empty>No appointments for this day.</Empty></div>}
@@ -110,7 +119,7 @@ export default function ReceptionQueue() {
                 <td className="px-3">{a.doctor.name}</td>
                 <td className="px-3">{a.slot}</td>
                 <td className="px-3"><StatusPill status={a.status} /></td>
-                <td className="px-6 py-3"><QueueActions a={a} setStatus={setStatus} /></td>
+                <td className="px-6 py-3"><QueueActions a={a} setStatus={setStatus} isToday={isToday} /></td>
               </tr>
             ))}
           </tbody>

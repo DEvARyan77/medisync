@@ -148,7 +148,7 @@ export function DatePicker({ id, value, onChange, min, max, placeholder = "Selec
                 <label className="sr-only" htmlFor={`${id}-m`}>Month</label>
                 <select
                   id={`${id}-m`}
-                  className="h-9 rounded-lg border border-line bg-white px-2 text-sm font-semibold"
+                  className="mini-select"
                   value={viewMonth}
                   onChange={(e) => setView(`${viewYear}-${String(Number(e.target.value) + 1).padStart(2, "0")}-01`)}
                 >
@@ -157,7 +157,7 @@ export function DatePicker({ id, value, onChange, min, max, placeholder = "Selec
                 <label className="sr-only" htmlFor={`${id}-y`}>Year</label>
                 <select
                   id={`${id}-y`}
-                  className="h-9 rounded-lg border border-line bg-white px-2 text-sm font-semibold"
+                  className="mini-select"
                   value={viewYear}
                   onChange={(e) => setView(`${e.target.value}-${String(viewMonth + 1).padStart(2, "0")}-01`)}
                 >
@@ -266,7 +266,7 @@ export function DateStrip({ value, onChange, min, max, days = 14, id }: { value:
 
   return (
     <div className="flex flex-col gap-3">
-      <div ref={strip} className="-mx-1 flex snap-x gap-2 overflow-x-auto px-1 pt-1 pb-2" role="listbox" aria-label="Choose a date">
+      <div ref={strip} className="no-scrollbar -mx-1 flex snap-x gap-2 overflow-x-auto px-1 pt-1 pb-2" role="listbox" aria-label="Choose a date">
         {list.map((d, i) => {
           const sel = d === value;
           return (

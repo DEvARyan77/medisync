@@ -15,6 +15,7 @@ export const registerPatientSchema = z
   gender: z.enum(["male", "female", "other"]).optional(),
   dateOfBirth: z.coerce.date().optional(),
   allergies: z.array(z.string()).optional(),
+  otp: z.string().trim().regex(/^\d{6}$/, "Enter the 6-digit code from your email"),
 })
   .refine(differentEmails, differentMsg);
 

@@ -196,3 +196,26 @@ export function passwordChangedEmail(name: string) {
     }),
   };
 }
+
+export function otpEmail(code: string, minutes: number) {
+  return {
+    subject: `${code} is your MediSync code`,
+    ...layout({
+      title: "Confirm your email",
+      intro: `Enter this code to finish creating your MediSync account. It works for ${minutes} minutes.`,
+      rows: [{ label: "Your code", value: code }],
+      footer: "If you didn't try to sign up, you can ignore this email: no account is created without the code.",
+    }),
+  };
+}
+
+export function accountDeletedEmail(name: string) {
+  return {
+    subject: "Your MediSync account was deleted",
+    ...layout({
+      title: `Goodbye, ${name}`,
+      intro: "Your MediSync account has been deleted and you can no longer sign in. Upcoming appointments were cancelled. Medical records the clinic must keep are no longer linked to your name or email.",
+      footer: "If you didn't do this, contact the clinic right away.",
+    }),
+  };
+}

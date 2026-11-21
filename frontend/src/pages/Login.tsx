@@ -4,6 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import { errorMessage } from "../api/client";
 import { homeFor } from "../components/ProtectedRoute";
 import { ErrorText } from "../components/ui";
+import { SocialButtons } from "../components/SocialButtons";
 
 const demoAccounts = [
   ["Patient", "patient@medisync.dev"],
@@ -20,6 +21,7 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const deleted = new URLSearchParams(window.location.search).has("deleted");
   const [busy, setBusy] = useState(false);
 
   if (user) return <Navigate to={homeFor[user.role]} replace />;
@@ -49,12 +51,13 @@ export default function Login() {
             Appointments, token queue, consultation, e-prescriptions, pharmacy and ambulance service.
           </p>
         </div>
-        <div className="text-sm text-brand-soft">Patient · Receptionist · Doctor · Pharmacist · Driver · Admin</div>
+        <div aria-hidden="true" />
       </section>
 
       <section className="flex flex-1 items-start justify-center p-4 sm:p-6 md:items-center">
         <form onSubmit={onSubmit} className="card flex w-full max-w-md animate-pop-in flex-col gap-5 shadow-xl shadow-slate-900/5 sm:p-10">
           <h2 className="text-2xl font-bold">Sign in</h2>
+          {deleted && <p className="animate-pop-in rounded-lg bg-brand-soft px-3 py-2 text-sm text-brand">Your account has been deleted. Take care!</p>}
           <div>
             <label className="label" htmlFor="email">Email</label>
             <input id="email" type="email" className="input" value={email} onChange={(e) => setEmail(e.target.value)} required />
@@ -68,6 +71,7 @@ export default function Login() {
           </div>
           <ErrorText message={error} />
           <button className="btn-primary h-12" disabled={busy}>{busy ? "Signing in…" : "Sign in"}</button>
+          <SocialButtons onSignedIn={(u) => navigate(homeFor[u.role])} onError={setError} />
           <p className="text-center text-sm text-muted">
             New patient? <Link className="font-semibold text-brand" to="/register">Create an account</Link>
           </p>

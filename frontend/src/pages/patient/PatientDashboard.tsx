@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Select } from "../../components/Select";
 import { Link } from "react-router-dom";
 import { api, errorMessage } from "../../api/client";
 import { useAuth } from "../../context/AuthContext";
@@ -14,7 +15,11 @@ export default function PatientDashboard() {
     return { appointments: a.data.appointments as Appointment[], prescriptions: p.data.prescriptions as Prescription[] };
   }, 15000);
 
-  const todays = data?.appointments.find((a) => a.date === today() && ["booked", "checked_in", "in_consultation"].includes(a.status));
+  // Today's visit: the one with a token comes first (in consultation, then waiting), then a booking not checked in yet
+  const rank: Record<string, number> = { in_consultation: 0, checked_in: 1, booked: 2 };
+  const todays = data?.appointments
+    .filter((a) => a.date === today() && a.status in rank)
+    .sort((x, y) => rank[x.status] - rank[y.status] || x.slot.localeCompare(y.slot))[0];
   const upcoming = data?.appointments.filter((a) => a.date >= today() && a.status === "booked") ?? [];
 
   async function cancel(id: string) {
@@ -24,13 +29,17 @@ export default function PatientDashboard() {
 
   return (
     <>
-      <PageTitle action={<Link to="/patient/ambulance" className="btn-danger animate-pulse-ring">Request ambulance</Link>}>Hello, {user?.name}</PageTitle>
+      <PageTitle>Hello, {user?.name}</PageTitle>
 
       <div className="stagger mb-6 grid gap-4 md:grid-cols-3">
         <div className="card card-hover p-5">
           <div className="text-xs font-semibold text-muted uppercase">Today's token</div>
           <div key={todays?.token} className="font-display animate-pop text-4xl font-bold text-brand">{todays?.token ?? "—"}</div>
-          <div className="text-sm text-muted">{todays ? <StatusPill status={todays.status} /> : "Check in at reception to get a token"}</div>
+          <div className="text-sm text-muted">
+            {!todays && "No visit today"}
+            {todays && !todays.token && <>Booked for {todays.slot} with {todays.doctor.name}. Check in at reception to get your token.</>}
+            {todays?.token && <><StatusPill status={todays.status} /> <span className="ml-1">{todays.doctor.name}</span></>}
+          </div>
         </div>
         <div className="card card-hover p-5">
           <div className="text-xs font-semibold text-muted uppercase">Next appointment</div>
@@ -131,17 +140,13 @@ function BookAppointment({ onBooked }: { onBooked: () => void }) {
       <div className="grid gap-4 md:grid-cols-2">
         <div>
           <label className="label" htmlFor="dept">Department</label>
-          <select id="dept" className="input" value={department} onChange={(e) => { setDepartment(e.target.value); setDoctorId(""); }}>
-            <option value="">All departments</option>
-            {departments.map((d) => <option key={d}>{d}</option>)}
-          </select>
+          <Select id="dept" value={department} onChange={(v) => { setDepartment(v); setDoctorId(""); }}
+            options={[{ value: "", label: "All departments" }, ...departments.map((d) => ({ value: d, label: d }))]} />
         </div>
         <div>
           <label className="label" htmlFor="doctor">Doctor</label>
-          <select id="doctor" className="input" value={doctorId} onChange={(e) => setDoctorId(e.target.value)}>
-            <option value="">Choose a doctor</option>
-            {shown.map((d) => <option key={d._id} value={d._id}>{d.name} ({d.department})</option>)}
-          </select>
+          <Select id="doctor" value={doctorId} onChange={setDoctorId} placeholder="Choose a doctor"
+            options={shown.map((d) => ({ value: d._id, label: d.name, hint: [d.department, d.specialization].filter(Boolean).join(" · ") }))} />
         </div>
       </div>
 

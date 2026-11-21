@@ -2,20 +2,21 @@ import { Router, Request, Response } from "express";
 import { asyncHandler } from "../../utils/asyncHandler";
 import { authorize, protect } from "../../middleware/auth";
 import { User } from "../auth/user.model";
-import { changeMyPassword, updateMyProfile } from "./profile.controller";
+import { changeMyPassword, deleteMyAccount, updateMyProfile } from "./profile.controller";
 
 const router = Router();
 
 // Own profile (every role)
 router.patch("/me", protect, asyncHandler(updateMyProfile));
 router.patch("/me/password", protect, asyncHandler(changeMyPassword));
+router.delete("/me", protect, asyncHandler(deleteMyAccount));
 
 // GET /api/users/doctors?department=Cardiology  (anyone logged in, used for booking)
 router.get(
   "/doctors",
   protect,
   asyncHandler(async (req: Request, res: Response) => {
-    const filter: Record<string, unknown> = { role: "doctor" };
+    const filter: Record<string, unknown> = { role: "doctor", deletedAt: { $exists: false } };
     if (typeof req.query.department === "string") filter.department = req.query.department;
     const doctors = await User.find(filter).select("name department specialization");
     res.json({ doctors });
@@ -29,7 +30,7 @@ router.get(
   authorize("receptionist", "doctor", "admin"),
   asyncHandler(async (req: Request, res: Response) => {
     const q = typeof req.query.q === "string" ? req.query.q.trim() : "";
-    const filter: Record<string, unknown> = { role: "patient" };
+    const filter: Record<string, unknown> = { role: "patient", deletedAt: { $exists: false } };
     if (q) {
       const escaped = q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
       filter.$or = [{ name: new RegExp(escaped, "i") }, { phone: new RegExp(escaped) }];

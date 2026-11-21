@@ -26,6 +26,16 @@ const userSchema = new Schema(
       relation: { type: String, trim: true },
     },
 
+    // Google / Facebook accounts linked to this user. hasPassword is false for accounts created by
+    // social sign-in until the user sets a password on their profile.
+    authProviders: {
+      type: [{ provider: { type: String, enum: ["google", "facebook"] }, providerId: String, _id: false }],
+      default: [],
+    },
+    hasPassword: { type: Boolean, default: true },
+    emailVerified: { type: Boolean, default: false },
+    deletedAt: { type: Date }, // set when the user deletes their account (data is anonymised)
+
     // Forgot-password: only a hash of the emailed token is stored.
     passwordResetTokenHash: { type: String, select: false },
     passwordResetExpires: { type: Date, select: false },

@@ -5,7 +5,7 @@ import { addDays, clinicNow, isPastSlot } from "../../utils/clinicTime";
 import { User } from "../auth/user.model";
 import { sendEmail } from "../../services/email";
 import { appointmentBookedEmail, appointmentCancelledEmail, checkedInEmail } from "../../services/emailTemplates";
-import { ACTIVE_STATUSES, Appointment, AppointmentStatus, OPD_SLOTS, nextToken } from "./appointment.model";
+import { ACTIVE_STATUSES, Appointment, AppointmentStatus, OPD_SLOTS, closePastDays, nextToken } from "./appointment.model";
 
 const dateString = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Use YYYY-MM-DD");
 
@@ -97,6 +97,7 @@ interface Person {
 
 // GET /api/appointments/mine  (patient's own appointments)
 export async function myAppointments(req: Request, res: Response) {
+  await closePastDays(today());
   const appointments = await Appointment.find({ patient: req.user!.id })
     .sort({ date: -1, slot: 1 })
     .populate(populate);
@@ -109,6 +110,7 @@ export async function getQueue(req: Request, res: Response) {
   const filter: Record<string, unknown> = { date };
   if (req.user!.role === "doctor") filter.doctor = req.user!.id;
 
+  await closePastDays(today());
   const appointments = await Appointment.find(filter).sort({ tokenNumber: 1, slot: 1 }).populate(populate);
 
   const count = (s: AppointmentStatus) => appointments.filter((a) => a.status === s).length;
@@ -147,6 +149,18 @@ export async function updateStatus(req: Request, res: Response) {
   }
   if (role === "patient" && appointment.patient.toString() !== id) throw new ApiError(403, "Not your appointment");
   if (role === "doctor" && appointment.doctor.toString() !== id) throw new ApiError(403, "Not your patient");
+
+  if ((status === "checked_in" || status === "no_show") && appointment.date !== today()) {
+    throw new ApiError(400, status === "checked_in" ? "Patients can only be checked in on the day of their appointment" : "Only today's appointments can be marked no-show");
+  }
+  if (status === "in_consultation") {
+    // One patient at a time: the doctor finishes the current consultation first
+    const current = await Appointment.findOne({ doctor: appointment.doctor, date: appointment.date, status: "in_consultation" }).populate("patient", "name");
+    if (current && current.id !== appointment.id) {
+      const who = (current.patient as unknown as Person | null)?.name ?? "the current patient";
+      throw new ApiError(409, `Finish ${current.token ?? ""} ${who} first. Only one patient can be in consultation at a time.`.replace("  ", " "));
+    }
+  }
 
   if (status === "checked_in") {
     Object.assign(appointment, await nextToken(appointment.date));

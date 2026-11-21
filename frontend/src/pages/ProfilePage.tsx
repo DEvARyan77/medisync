@@ -1,4 +1,5 @@
 import { FormEvent, useState } from "react";
+import { Select } from "../components/Select";
 import { api, errorMessage } from "../api/client";
 import { useAuth } from "../context/AuthContext";
 import { ErrorText, PageTitle } from "../components/ui";
@@ -15,7 +16,10 @@ export default function ProfilePage() {
       <PageTitle>My profile</PageTitle>
       <div className="stagger grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_380px]">
         <ProfileForm user={user} />
-        <PasswordForm />
+        <div className="flex flex-col gap-6">
+          <PasswordForm hasPassword={user.hasPassword !== false} />
+          {user.role !== "admin" && <DeleteAccount hasPassword={user.hasPassword !== false} />}
+        </div>
       </div>
     </>
   );
@@ -117,12 +121,8 @@ function ProfileForm({ user }: { user: User }) {
             </div>
             <div>
               <label className="label" htmlFor="gender">Gender</label>
-              <select id="gender" className="input" value={form.gender} onChange={set("gender")}>
-                <option value="">Prefer not to say</option>
-                <option value="male">Male</option>
-                <option value="female">Female</option>
-                <option value="other">Other</option>
-              </select>
+              <Select id="gender" value={form.gender} onChange={(v) => { setForm({ ...form, gender: v }); setSaved(""); }}
+                options={[{ value: "", label: "Prefer not to say" }, { value: "male", label: "Male" }, { value: "female", label: "Female" }, { value: "other", label: "Other" }]} />
             </div>
             <div className="sm:col-span-2">
               <label className="label" htmlFor="address">Address</label>
@@ -138,10 +138,8 @@ function ProfileForm({ user }: { user: User }) {
             <h2 className="text-lg font-semibold sm:col-span-2">Medical details</h2>
             <div>
               <label className="label" htmlFor="blood">Blood group</label>
-              <select id="blood" className="input" value={form.bloodGroup} onChange={set("bloodGroup")}>
-                <option value="">Not known</option>
-                {BLOOD_GROUPS.map((b) => <option key={b}>{b}</option>)}
-              </select>
+              <Select id="blood" value={form.bloodGroup} onChange={(v) => { setForm({ ...form, bloodGroup: v }); setSaved(""); }}
+                options={[{ value: "", label: "Not known" }, ...BLOOD_GROUPS.map((b) => ({ value: b, label: b }))]} />
             </div>
             <div>
               <label className="label" htmlFor="allergies">Allergies</label>
@@ -175,7 +173,8 @@ function ProfileForm({ user }: { user: User }) {
   );
 }
 
-function PasswordForm() {
+function PasswordForm({ hasPassword }: { hasPassword: boolean }) {
+  const { user, setSession } = useAuth();
   const [form, setForm] = useState({ currentPassword: "", newPassword: "", confirm: "" });
   const [error, setError] = useState("");
   const [saved, setSaved] = useState("");
@@ -186,9 +185,10 @@ function PasswordForm() {
     setSaved("");
     if (form.newPassword !== form.confirm) return setError("The new passwords do not match");
     try {
-      await api.patch("/users/me/password", { currentPassword: form.currentPassword, newPassword: form.newPassword });
+      await api.patch("/users/me/password", { currentPassword: hasPassword ? form.currentPassword : undefined, newPassword: form.newPassword });
       setForm({ currentPassword: "", newPassword: "", confirm: "" });
-      setSaved("Password changed. We emailed you a confirmation.");
+      setSaved(hasPassword ? "Password changed. We emailed you a confirmation." : "Password set. You can now also sign in with your email and password.");
+      if (!hasPassword && user) setSession({ ...user, hasPassword: true });
     } catch (err) {
       setError(errorMessage(err));
     }
@@ -196,11 +196,15 @@ function PasswordForm() {
 
   return (
     <form onSubmit={submit} className="card flex h-fit flex-col gap-4">
-      <h2 className="text-lg font-semibold">Change password</h2>
-      <div>
-        <label className="label" htmlFor="cur">Current password</label>
-        <input id="cur" type="password" autoComplete="current-password" className="input" value={form.currentPassword} onChange={(e) => setForm({ ...form, currentPassword: e.target.value })} required />
-      </div>
+      <h2 className="text-lg font-semibold">{hasPassword ? "Change password" : "Set a password"}</h2>
+      {hasPassword ? (
+        <div>
+          <label className="label" htmlFor="cur">Current password</label>
+          <input id="cur" type="password" autoComplete="current-password" className="input" value={form.currentPassword} onChange={(e) => setForm({ ...form, currentPassword: e.target.value })} required />
+        </div>
+      ) : (
+        <p className="text-sm text-muted">You signed up with Google or Facebook. Set a password to also sign in with your email.</p>
+      )}
       <div>
         <label className="label" htmlFor="new">New password</label>
         <input id="new" type="password" autoComplete="new-password" minLength={6} className="input" value={form.newPassword} onChange={(e) => setForm({ ...form, newPassword: e.target.value })} required />
@@ -211,7 +215,64 @@ function PasswordForm() {
       </div>
       <ErrorText message={error} />
       <Saved text={saved} />
-      <button className="btn-outline w-full">Change password</button>
+      <button className="btn-outline w-full">{hasPassword ? "Change password" : "Set password"}</button>
     </form>
+  );
+}
+
+/** Danger zone: deletes the account after the password (or typing DELETE for Google/Facebook accounts). */
+function DeleteAccount({ hasPassword }: { hasPassword: boolean }) {
+  const { logout } = useAuth();
+  const [open, setOpen] = useState(false);
+  const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
+  const ready = confirm.trim().toUpperCase() === "DELETE" && (!hasPassword || password.length > 0);
+
+  async function remove(e: FormEvent) {
+    e.preventDefault();
+    setBusy(true);
+    setError("");
+    try {
+      await api.delete("/users/me", { data: { password: hasPassword ? password : undefined, confirm } });
+      logout();
+      window.location.href = "/login?deleted=1";
+    } catch (err) {
+      setError(errorMessage(err));
+      setBusy(false);
+    }
+  }
+
+  return (
+    <section className="card flex h-fit flex-col gap-3 border-red-200">
+      <h2 className="text-lg font-semibold text-danger">Delete account</h2>
+      <p className="text-sm text-muted">
+        You won't be able to sign in again. Upcoming appointments are cancelled. Visit records the clinic must keep stay, but without your name, email or phone.
+      </p>
+      {!open ? (
+        <button type="button" className="btn self-start border border-red-200 bg-white text-danger hover:bg-red-50" onClick={() => setOpen(true)}>
+          Delete my account…
+        </button>
+      ) : (
+        <form onSubmit={remove} className="flex animate-pop-in flex-col gap-3">
+          {hasPassword && (
+            <div>
+              <label className="label" htmlFor="del-pw">Your password</label>
+              <input id="del-pw" type="password" autoComplete="current-password" className="input" value={password} onChange={(e) => setPassword(e.target.value)} />
+            </div>
+          )}
+          <div>
+            <label className="label" htmlFor="del-confirm">Type <b>DELETE</b> to confirm</label>
+            <input id="del-confirm" className="input" autoComplete="off" value={confirm} onChange={(e) => setConfirm(e.target.value)} />
+          </div>
+          <ErrorText message={error} />
+          <div className="flex flex-wrap gap-2">
+            <button className="btn-danger" disabled={!ready || busy}>{busy ? "Deleting…" : "Delete forever"}</button>
+            <button type="button" className="btn-ghost" onClick={() => { setOpen(false); setPassword(""); setConfirm(""); setError(""); }}>Keep my account</button>
+          </div>
+        </form>
+      )}
+    </section>
   );
 }

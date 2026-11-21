@@ -138,7 +138,7 @@ function RequestForm({ me, phone, onDone }: { me: { lat: number; lng: number } |
         <input id="ph" className="input" value={form.contactPhone} onChange={(e) => setForm({ ...form, contactPhone: e.target.value })} required />
       </div>
       <ErrorText message={error} />
-      <button className="btn-danger animate-pulse-ring h-13 text-lg" disabled={busy}>{busy ? "Sending…" : "Request ambulance now"}</button>
+      <button className="btn-danger h-13 text-lg" disabled={busy}>{busy ? "Sending…" : "Request ambulance now"}</button>
     </form>
   );
 }

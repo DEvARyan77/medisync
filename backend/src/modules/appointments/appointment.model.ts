@@ -48,3 +48,18 @@ export async function nextToken(date: string): Promise<{ token: string; tokenNum
   const counter = await Counter.findOneAndUpdate({ _id: date }, { $inc: { seq: 1 } }, { new: true, upsert: true });
   return { token: `A-${counter.seq}`, tokenNumber: counter.seq };
 }
+
+/**
+ * Appointments from earlier days that never finished: a "booked" patient who never came, or a
+ * checked-in patient who left without being seen, become no-shows. Runs on start-up, every few
+ * minutes, and before lists are read, so yesterday's bookings never show as "waiting".
+ */
+export async function closePastDays(today: string): Promise<number> {
+  const result = await Appointment.updateMany(
+    { date: { $lt: today }, status: { $in: ["booked", "checked_in"] } },
+    { $set: { status: "no_show" } }
+  );
+  // A consultation left open yesterday is treated as finished
+  await Appointment.updateMany({ date: { $lt: today }, status: "in_consultation" }, { $set: { status: "completed" } });
+  return result.modifiedCount;
+}

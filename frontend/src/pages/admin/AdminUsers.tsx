@@ -1,4 +1,5 @@
 import { FormEvent, useState } from "react";
+import { Select } from "../../components/Select";
 import { api, errorMessage } from "../../api/client";
 import { usePolling } from "../../hooks/usePolling";
 import { ErrorText, PageTitle } from "../../components/ui";
@@ -40,9 +41,8 @@ export default function AdminUsers() {
       <form onSubmit={submit} className="card mb-6 grid gap-4 md:grid-cols-3">
         <h2 className="text-lg font-semibold md:col-span-3">Add staff member</h2>
         <div><label className="label" htmlFor="role">Role</label>
-          <select id="role" className="input" value={form.role} onChange={set("role")}>
-            <option value="doctor">Doctor</option><option value="receptionist">Receptionist</option><option value="pharmacist">Pharmacist</option><option value="driver">Ambulance driver</option><option value="admin">Admin</option>
-          </select>
+          <Select id="role" value={form.role} onChange={(v) => setForm({ ...form, role: v })}
+            options={[{ value: "doctor", label: "Doctor" }, { value: "receptionist", label: "Receptionist" }, { value: "pharmacist", label: "Pharmacist" }, { value: "driver", label: "Ambulance driver" }, { value: "admin", label: "Admin" }]} />
         </div>
         <div><label className="label" htmlFor="name">Name</label><input id="name" className="input" value={form.name} onChange={set("name")} required /></div>
         <div><label className="label" htmlFor="email">Email</label><input id="email" type="email" className="input" value={form.email} onChange={set("email")} required /></div>
@@ -59,7 +59,8 @@ export default function AdminUsers() {
           <>
             <div><label className="label" htmlFor="veh">Vehicle number</label><input id="veh" className="input" value={form.vehicleNumber} onChange={set("vehicleNumber")} required /></div>
             <div><label className="label" htmlFor="vt">Ambulance type</label>
-              <select id="vt" className="input" value={form.vehicleType} onChange={set("vehicleType")}><option value="basic">Basic life support</option><option value="advanced">Advanced life support</option></select>
+              <Select id="vt" value={form.vehicleType} onChange={(v) => setForm({ ...form, vehicleType: v })}
+                options={[{ value: "basic", label: "Basic life support" }, { value: "advanced", label: "Advanced life support" }]} />
             </div>
           </>
         )}
