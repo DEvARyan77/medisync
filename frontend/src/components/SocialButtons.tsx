@@ -68,7 +68,8 @@ export function SocialButtons({ onSignedIn, onError }: { onSignedIn: (u: User, c
           },
         });
         const width = Math.min(googleBox.current!.offsetWidth || 320, 400);
-        window.google.accounts.id.renderButton(googleBox.current, { theme: "outline", size: "large", text: "continue_with", shape: "pill", width });
+        const dark = document.documentElement.classList.contains("dark");
+        window.google.accounts.id.renderButton(googleBox.current, { theme: dark ? "filled_black" : "outline", size: "large", text: "continue_with", shape: "pill", width });
       })
       .catch((e) => onError(e.message));
     return () => {
@@ -104,7 +105,7 @@ export function SocialButtons({ onSignedIn, onError }: { onSignedIn: (u: User, c
       <div className="flex items-center gap-3 text-xs font-semibold text-muted uppercase">
         <span className="h-px flex-1 bg-line" /> or <span className="h-px flex-1 bg-line" />
       </div>
-      {config.google && <div ref={googleBox} className={`flex min-h-11 justify-center ${busy === "google" ? "pointer-events-none opacity-60" : ""}`} />}
+      {config.google && <div ref={googleBox} style={{ colorScheme: "light" }} className={`flex min-h-11 justify-center ${busy === "google" ? "pointer-events-none opacity-60" : ""}`} />}
       {config.facebook && (
         <button
           type="button"

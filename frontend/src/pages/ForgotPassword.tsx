@@ -1,4 +1,5 @@
 import { FormEvent, useState } from "react";
+import { ThemeToggle } from "../components/ThemeToggle";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { api, errorMessage } from "../api/client";
 import { useAuth } from "../context/AuthContext";
@@ -7,7 +8,8 @@ import { ErrorText } from "../components/ui";
 
 function Shell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex min-h-screen items-start justify-center bg-page p-4 sm:items-center sm:p-6">
+    <div className="relative flex min-h-screen items-start justify-center bg-page p-4 pt-16 sm:items-center sm:p-6 sm:pt-16">
+      <ThemeToggle className="absolute top-4 right-4 w-11" />
       <div className="card flex w-full max-w-md animate-pop-in flex-col gap-5 shadow-xl shadow-slate-900/5 sm:p-10">{children}</div>
     </div>
   );

@@ -1,4 +1,5 @@
 import { FormEvent, useEffect, useRef, useState } from "react";
+import { ThemeToggle } from "../components/ThemeToggle";
 import { Select } from "../components/Select";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
@@ -71,7 +72,8 @@ export default function Register() {
   }
 
   return (
-    <div className="flex min-h-screen items-start justify-center bg-page p-4 sm:items-center sm:p-6">
+    <div className="relative flex min-h-screen items-start justify-center bg-page p-4 pt-16 sm:items-center sm:p-6 sm:pt-16">
+      <ThemeToggle className="absolute top-4 right-4 w-11" />
       {step === "details" ? (
         <form onSubmit={sendCode} className="card grid w-full max-w-xl animate-pop-in gap-4 shadow-xl shadow-slate-900/5 sm:grid-cols-2 sm:p-10">
           <div className="sm:col-span-2">
