@@ -3,6 +3,7 @@ import { Link, Navigate, NavLink, Outlet, useLocation, useNavigate } from "react
 import { useAuth } from "../context/AuthContext";
 import { homeFor } from "./ProtectedRoute";
 import type { Role } from "../types";
+import { ThemeToggle } from "./ThemeToggle";
 
 // Small line icons, shown alone when the sidebar is collapsed
 const path = (d: string) => (
@@ -104,6 +105,7 @@ export function Layout() {
             </span>
           )}
         </NavLink>
+        <ThemeToggle withLabel={!mini} className={mini ? "px-0" : "px-3"} />
         <button
           type="button"
           title={mini ? "Log out" : undefined}

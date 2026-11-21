@@ -105,6 +105,48 @@
   :focus-visible { outline: 2px solid var(--color-brand); outline-offset: 2px; }
 }
 
+/* ---------- Dark theme: <html class="dark"> (ThemeToggle). Colours are swapped through the
+   same variables the utilities use, so every page follows without changes. ---------- */
+html.dark {
+  color-scheme: dark;
+  --color-page: #0d1117;
+  --color-line: #2b323c;
+  --color-muted: #9aa4b2;
+  --color-brand: #12a594;
+  --color-brand-dark: #0f8a7c;
+  --color-brand-soft: #0f2f2b;
+  --color-danger: #e5484d;
+  --color-slate-100: #1f2630;
+  --color-slate-300: #4b5563;
+  --color-slate-400: #6b7280;
+  --color-slate-500: #9aa4b2;
+  --color-slate-700: #c9d1d9;
+  --color-slate-800: #dde3ea;
+  --color-slate-900: #e8edf2;
+  --color-red-50: #2d1416;
+  --color-red-100: #3b181b;
+  --color-red-200: #5c2328;
+  --color-red-800: #fda4a8;
+  --color-amber-50: #2b220e;
+  --color-amber-100: #3a2d10;
+  --color-amber-800: #f5c564;
+  --color-amber-900: #fadb8c;
+  --color-emerald-100: #0f2e22;
+  --color-emerald-800: #6fdcaa;
+}
+html.dark body { background: var(--color-page); color: var(--color-slate-900); }
+html.dark .bg-white,
+html.dark .card,
+html.dark .input,
+html.dark .btn-ghost,
+html.dark .btn-outline,
+html.dark .mini-select,
+html.dark textarea { background-color: #161b22; }
+html.dark .text-brand-soft { color: #a7e3da; }
+/* Shadows stay dark instead of turning into a light glow */
+html.dark * { --tw-shadow-color: rgb(0 0 0 / 0.45) !important; }
+html.dark .leaflet-container { filter: brightness(0.85) contrast(1.05); }
+
 /* People who turn on "reduce motion" get instant changes instead. */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

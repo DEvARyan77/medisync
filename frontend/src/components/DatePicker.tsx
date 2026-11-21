@@ -280,7 +280,7 @@ export function DateStrip({ value, onChange, min, max, days = 14, id }: { value:
               style={{ animationDelay: `${Math.min(i, 10) * 35}ms` }}
               className={[
                 "flex w-16 shrink-0 animate-pop-in snap-start flex-col items-center rounded-2xl border py-2 transition-[transform,background-color,box-shadow,border-color] duration-300 ease-(--ease-spring)",
-                sel ? "scale-105 border-brand bg-brand text-white shadow-lg shadow-brand/30" : "border-line bg-white hover:-translate-y-1 hover:border-brand/50 hover:shadow-md active:scale-95",
+                sel ? "border-brand bg-brand text-white" : "border-line bg-white hover:-translate-y-1 hover:border-brand/50 hover:shadow-md active:scale-95",
               ].join(" ")}
             >
               <span className={`text-[11px] font-semibold uppercase ${sel ? "text-brand-soft" : "text-muted"}`}>

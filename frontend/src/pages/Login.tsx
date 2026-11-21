@@ -5,6 +5,7 @@ import { errorMessage } from "../api/client";
 import { homeFor } from "../components/ProtectedRoute";
 import { ErrorText } from "../components/ui";
 import { SocialButtons } from "../components/SocialButtons";
+import { ThemeToggle } from "../components/ThemeToggle";
 
 const demoAccounts = [
   ["Patient", "patient@medisync.dev"],
@@ -54,7 +55,8 @@ export default function Login() {
         <div aria-hidden="true" />
       </section>
 
-      <section className="flex flex-1 items-start justify-center p-4 sm:p-6 md:items-center">
+      <section className="relative flex flex-1 items-start justify-center p-4 pt-16 sm:p-6 sm:pt-16 md:items-center">
+        <ThemeToggle className="absolute top-4 right-4 w-11" />
         <form onSubmit={onSubmit} className="card flex w-full max-w-md animate-pop-in flex-col gap-5 shadow-xl shadow-slate-900/5 sm:p-10">
           <h2 className="text-2xl font-bold">Sign in</h2>
           {deleted && <p className="animate-pop-in rounded-lg bg-brand-soft px-3 py-2 text-sm text-brand">Your account has been deleted. Take care!</p>}

@@ -55,12 +55,14 @@ export default function PharmacyPage() {
               </div>
               <div className="flex items-center gap-2">
                 <StatusPill status={selected.status} />
+                {selected.status === "dispensed" && (
                 <button type="button" className="btn-ghost h-9 px-3 text-sm" onClick={() => printPrescription(selected)} title="Print this prescription">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                     <path d="M6 9V3h12v6M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2M6 14h12v7H6z" />
                   </svg>
                   Print
                 </button>
+                )}
               </div>
             </div>
             {/* Phones: stacked medicine cards */}
@@ -116,7 +118,7 @@ function printPrescription(p: Prescription) {
     <div class="grid">
       <div><span class="muted">Patient</span><br><b>${esc(p.patient.name)}</b></div>
       <div><span class="muted">Doctor</span><br><b>${esc(p.doctor.name)}</b></div>
-      <div><span class="muted">Status</span><br>${p.status === "dispensed" ? "Dispensed" : "To dispense"}</div>
+      <div><span class="muted">Status</span><br>Dispensed</div>
       <div><span class="muted">Prescription ID</span><br>${esc(p._id.slice(-8).toUpperCase())}</div>
     </div>
     <div class="allergy"><b>Allergies:</b> ${esc(p.patient.allergies?.join(", ") || "none recorded")}</div>
