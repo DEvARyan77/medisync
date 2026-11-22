@@ -47,6 +47,14 @@ export function SocialButtons({ onSignedIn, onError }: { onSignedIn: (u: User, c
     onSignedIn(data.user, data.created);
   };
 
+  // Re-draw Google's button when the light/dark theme changes, so it always matches the page
+  const [dark, setDark] = useState(() => document.documentElement.classList.contains("dark"));
+  useEffect(() => {
+    const watch = new MutationObserver(() => setDark(document.documentElement.classList.contains("dark")));
+    watch.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+    return () => watch.disconnect();
+  }, []);
+
   // Google draws its own button (required by Google's branding rules)
   useEffect(() => {
     if (!config?.google || !googleBox.current) return;
@@ -68,14 +76,14 @@ export function SocialButtons({ onSignedIn, onError }: { onSignedIn: (u: User, c
           },
         });
         const width = Math.min(googleBox.current!.offsetWidth || 320, 400);
-        const dark = document.documentElement.classList.contains("dark");
+        googleBox.current!.innerHTML = "";
         window.google.accounts.id.renderButton(googleBox.current, { theme: dark ? "filled_black" : "outline", size: "large", text: "continue_with", shape: "pill", width });
       })
       .catch((e) => onError(e.message));
     return () => {
       cancelled = true;
     };
-  }, [config?.google]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [config?.google, dark]); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function facebook() {
     if (!config?.facebook) return;
